@@ -144,15 +144,15 @@
                                             <div class="col">
                                                 <div class="row">
                                                     <div class="col">
-                                                        @if( $errors->has('pterodactyl_error_message') )
-                                                            @foreach( $errors->get('pterodactyl_error_message') as $err )
+                                                        @if( $errors->has('phoenixpanel_error_message') )
+                                                            @foreach( $errors->get('phoenixpanel_error_message') as $err )
                                                                 <span class="text-danger" role="alert">
                                                                     <small><strong>{{ $err }}</strong></small>
                                                                 </span>
                                                             @endforeach
                                                         @endif
-                                                        @if( $errors->has('pterodactyl_error_status') )
-                                                            @foreach( $errors->get('pterodactyl_error_status') as $err )
+                                                        @if( $errors->has('phoenixpanel_error_status') )
+                                                            @foreach( $errors->get('phoenixpanel_error_status') as $err )
                                                                 <span class="text-danger" role="alert">
                                                                         <small><strong>{{ $err }}</strong></small>
                                                                     </span>

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Classes\PterodactylClient;
-use App\Models\Pterodactyl\Egg;
-use App\Models\Pterodactyl\Location;
-use App\Models\Pterodactyl\Node;
+use App\Classes\PhoenixPanelClient;
+use App\Models\PhoenixPanel\Egg;
+use App\Models\PhoenixPanel\Location;
+use App\Models\PhoenixPanel\Node;
 use App\Models\Product;
 use App\Models\User;
 use App\Notifications\DynamicNotification;
-use App\Settings\PterodactylSettings;
+use App\Settings\PhoenixPanelSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -21,11 +21,11 @@ use Illuminate\Support\Facades\RateLimiter;
 
 class ProductController extends Controller
 {
-    private $pterodactyl;
+    private $phoenixpanel;
 
-    public function __construct(PterodactylSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $ptero_settings)
     {
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
     }
 
     /**
@@ -74,7 +74,7 @@ class ProductController extends Controller
     {
         $nodes = $this->getNodesBasedOnEgg($request, $egg);
         foreach ($nodes as $key => $node) {
-            $pteroNode = $this->pterodactyl->getNode($node->id);
+            $pteroNode = $this->phoenixpanel->getNode($node->id);
             if ($pteroNode['allocated_resources']['memory'] >= ($pteroNode['memory'] * ($pteroNode['memory_overallocate'] + 100) / 100) || $pteroNode['allocated_resources']['disk'] >= ($pteroNode['disk'] * ($pteroNode['disk_overallocate'] + 100) / 100)) {
                 $nodes->forget($key);
             }
@@ -150,7 +150,7 @@ class ProductController extends Controller
             $product->doesNotFit = true;
 
             foreach ($product->nodes as $node) {
-                $pteroNode = $this->pterodactyl->getNode($node->id);
+                $pteroNode = $this->phoenixpanel->getNode($node->id);
 
                 $availableMemory = ($pteroNode['memory'] * ($pteroNode['memory_overallocate'] + 100) / 100) - $pteroNode['allocated_resources']['memory'];
                 $availableDisk = ($pteroNode['disk'] * ($pteroNode['disk_overallocate'] + 100) / 100) - $pteroNode['allocated_resources']['disk'];

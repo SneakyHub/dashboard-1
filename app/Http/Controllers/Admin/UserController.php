@@ -7,8 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\DynamicNotification;
 use App\Settings\LocaleSettings;
-use App\Settings\PterodactylSettings;
-use App\Classes\PterodactylClient;
+use App\Settings\PhoenixPanelSettings;
+use App\Classes\PhoenixPanelClient;
 use App\Settings\GeneralSettings;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
@@ -39,7 +39,7 @@ class UserController extends Controller
     const CHANGE_PASSWORD_PERMISSION = "admin.users.write.password";
     const CHANGE_ROLE_PERMISSION ="admin.users.write.role";
     const CHANGE_REFERRAL_PERMISSION ="admin.users.write.referral";
-    const CHANGE_PTERO_PERMISSION = "admin.users.write.pterodactyl";
+    const CHANGE_PTERO_PERMISSION = "admin.users.write.phoenixpanel";
 
     const CHANGE_SERVERLIMIT_PERMISSION = "admin.users.write.serverlimit";
     const DELETE_PERMISSION = "admin.users.delete";
@@ -47,11 +47,11 @@ class UserController extends Controller
     const LOGIN_PERMISSION = "admin.users.login_as";
 
 
-    private $pterodactyl;
+    private $phoenixpanel;
 
-    public function __construct(PterodactylSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $ptero_settings)
     {
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
     }
 
     /**
@@ -108,7 +108,7 @@ class UserController extends Controller
     public function json(Request $request)
     {
         $users = QueryBuilder::for(User::query())
-            ->allowedFilters(['id', 'name', 'pterodactyl_id', 'email'])
+            ->allowedFilters(['id', 'name', 'phoenixpanel_id', 'email'])
             ->paginate(25);
 
         if ($request->query('user_id')) {
@@ -158,7 +158,7 @@ class UserController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|min:4|max:30',
-            'pterodactyl_id' => "required|numeric|unique:users,pterodactyl_id,{$user->id}",
+            'phoenixpanel_id' => "required|numeric|unique:users,phoenixpanel_id,{$user->id}",
             'email' => 'required|string|email',
             'credits' => 'required|numeric|min:0|max:99999999',
             'server_limit' => 'required|numeric|min:0|max:1000000',
@@ -171,9 +171,9 @@ class UserController extends Controller
             $user->syncRoles($collectedRoles);
         }
 
-        if (isset($this->pterodactyl->getUser($request->input('pterodactyl_id'))['errors'])) {
+        if (isset($this->phoenixpanel->getUser($request->input('phoenixpanel_id'))['errors'])) {
             throw ValidationException::withMessages([
-                'pterodactyl_id' => [__("User does not exists on pterodactyl's panel")],
+                'phoenixpanel_id' => [__("User does not exists on phoenixpanel's panel")],
             ]);
         }
 
@@ -187,8 +187,8 @@ class UserController extends Controller
             $dataArray['credits'] = $request->input('credits');
         }
 
-        if ($this->canAny([self::CHANGE_PTERO_PERMISSION, self::WRITE_PERMISSION]) && $request->filled('pterodactyl_id')) {
-            $dataArray['pterodactyl_id'] = $request->input('pterodactyl_id');
+        if ($this->canAny([self::CHANGE_PTERO_PERMISSION, self::WRITE_PERMISSION]) && $request->filled('phoenixpanel_id')) {
+            $dataArray['phoenixpanel_id'] = $request->input('phoenixpanel_id');
         }
 
         if ($this->canAny([self::CHANGE_REFERRAL_PERMISSION, self::WRITE_PERMISSION]) && $request->filled('referral_code')) {
@@ -451,8 +451,8 @@ class UserController extends Controller
             ->editColumn('last_seen', function (User $user) {
                 return $user->last_seen ? $user->last_seen->diffForHumans() : __('Never');
             })
-            ->editColumn('name', function (User $user, PterodactylSettings $ptero_settings) {
-                return '<a class="text-info" target="_blank" href="' . $ptero_settings->panel_url . '/admin/users/view/' . $user->pterodactyl_id . '">' . strip_tags($user->name) . '</a>';
+            ->editColumn('name', function (User $user, PhoenixPanelSettings $ptero_settings) {
+                return '<a class="text-info" target="_blank" href="' . $ptero_settings->panel_url . '/admin/users/view/' . $user->phoenixpanel_id . '">' . strip_tags($user->name) . '</a>';
             })
             ->orderColumn('role', 'role_name $1')
             ->rawColumns(['avatar', 'name', 'credits', 'role', 'usage',  'actions'])

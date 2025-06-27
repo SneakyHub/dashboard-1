@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pterodactyl\Egg;
-use App\Models\Pterodactyl\Location;
-use App\Models\Pterodactyl\Nest;
-use App\Models\Pterodactyl\Node;
+use App\Models\PhoenixPanel\Egg;
+use App\Models\PhoenixPanel\Location;
+use App\Models\PhoenixPanel\Nest;
+use App\Models\PhoenixPanel\Node;
 use App\Models\Product;
 use App\Models\Server;
 use App\Models\User;
@@ -14,8 +14,8 @@ use App\Settings\DiscordSettings;
 use Carbon\Carbon;
 use App\Settings\UserSettings;
 use App\Settings\ServerSettings;
-use App\Settings\PterodactylSettings;
-use App\Classes\PterodactylClient;
+use App\Settings\PhoenixPanelSettings;
+use App\Classes\PhoenixPanelClient;
 use App\Settings\GeneralSettings;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,22 +41,22 @@ class ServerController extends Controller
         'annually' => 31104000
     ];
 
-    private PterodactylClient $pterodactyl;
-    private PterodactylSettings $pteroSettings;
+    private PhoenixPanelClient $phoenixpanel;
+    private PhoenixPanelSettings $pteroSettings;
     private GeneralSettings $generalSettings;
     private ServerSettings $serverSettings;
     private UserSettings $userSettings;
     private DiscordSettings $discordSettings;
 
     public function __construct(
-        PterodactylSettings $pteroSettings,
+        PhoenixPanelSettings $pteroSettings,
         GeneralSettings $generalSettings,
         ServerSettings $serverSettings,
         UserSettings $userSettings,
         DiscordSettings $discordSettings
     ) {
         $this->pteroSettings = $pteroSettings;
-        $this->pterodactyl = new PterodactylClient($pteroSettings);
+        $this->phoenixpanel = new PhoenixPanelClient($pteroSettings);
         $this->generalSettings = $generalSettings;
         $this->serverSettings = $serverSettings;
         $this->userSettings = $userSettings;
@@ -70,7 +70,7 @@ class ServerController extends Controller
         return view('servers.index')->with([
             'servers' => $servers,
             'credits_display_name' => $this->generalSettings->credits_display_name,
-            'pterodactyl_url' => $this->pteroSettings->panel_url,
+            'phoenixpanel_url' => $this->pteroSettings->panel_url,
             'phpmyadmin_url' => $this->generalSettings->phpmyadmin_url
         ]);
     }
@@ -211,7 +211,7 @@ class ServerController extends Controller
         $servers = Auth::user()->servers;
 
         foreach ($servers as $server) {
-            $serverInfo = $this->pterodactyl->getServerAttributes($server->pterodactyl_id);
+            $serverInfo = $this->phoenixpanel->getServerAttributes($server->phoenixpanel_id);
             if (!$serverInfo) continue;
 
             $this->updateServerInfo($server, $serverInfo);
@@ -268,7 +268,7 @@ class ServerController extends Controller
             'last_billed' => Carbon::now()
         ]);
 
-        $allocationId = $this->pterodactyl->getFreeAllocationId($node);
+        $allocationId = $this->phoenixpanel->getFreeAllocationId($node);
         if (!$allocationId) {
             Log::error('No AllocationID found.', [
                 'server_id' => $server->id,
@@ -278,9 +278,9 @@ class ServerController extends Controller
             return null;
         }
 
-        $response = $this->pterodactyl->createServer($server, $egg, $allocationId, $request->input('egg_variables'));
+        $response = $this->phoenixpanel->createServer($server, $egg, $allocationId, $request->input('egg_variables'));
         if ($response->failed()) {
-            Log::error('Failed to create server on Pterodactyl', [
+            Log::error('Failed to create server on PhoenixPanel', [
                 'server_id' => $server->id,
                 'status' => $response->status(),
                 'error' => $response->json()
@@ -291,7 +291,7 @@ class ServerController extends Controller
 
         $serverAttributes = $response->json()['attributes'];
         $server->update([
-            'pterodactyl_id' => $serverAttributes['id'],
+            'phoenixpanel_id' => $serverAttributes['id'],
             'identifier' => $serverAttributes['identifier']
         ]);
 
@@ -324,10 +324,10 @@ class ServerController extends Controller
         }
 
         try {
-            $serverInfo = $this->pterodactyl->getServerAttributes($server->pterodactyl_id);
+            $serverInfo = $this->phoenixpanel->getServerAttributes($server->phoenixpanel_id);
 
             if (!$serverInfo) {
-                throw new Exception("Server not found on Pterodactyl panel");
+                throw new Exception("Server not found on PhoenixPanel panel");
             }
 
             $this->handleServerDeletion($server);
@@ -337,7 +337,7 @@ class ServerController extends Controller
         } catch (Exception $e) {
             Log::error('Server deletion failed', [
                 'server_id' => $server->id,
-                'pterodactyl_id' => $server->pterodactyl_id,
+                'phoenixpanel_id' => $server->phoenixpanel_id,
                 'error' => $e->getMessage()
             ]);
 
@@ -383,7 +383,7 @@ class ServerController extends Controller
             return back()->with('error', __('This is not your Server!'));
         }
 
-        $serverAttributes = $this->pterodactyl->getServerAttributes($server->pterodactyl_id);
+        $serverAttributes = $this->phoenixpanel->getServerAttributes($server->phoenixpanel_id);
         $upgradeOptions = $this->getUpgradeOptions($server, $serverAttributes);
         return view('servers.settings')->with([
             'server' => $server,
@@ -399,7 +399,7 @@ class ServerController extends Controller
     {
         $currentProduct = Product::find($server->product_id);
         $nodeId = $serverInfo['relationships']['node']['attributes']['id'];
-        $pteroNode = $this->pterodactyl->getNode($nodeId);
+        $pteroNode = $this->phoenixpanel->getNode($nodeId);
         $currentEgg = $serverInfo['egg'];
 
         //$currentProductEggs = $currentProduct->eggs->pluck('id')->toArray();
@@ -483,7 +483,7 @@ class ServerController extends Controller
             return false;
         }
 
-        $serverInfo = $this->pterodactyl->getServerAttributes($server->pterodactyl_id);
+        $serverInfo = $this->phoenixpanel->getServerAttributes($server->phoenixpanel_id);
         if (!$serverInfo) {
             return false;
         }
@@ -494,7 +494,7 @@ class ServerController extends Controller
         // Check node resources
         $requireMemory = $newProduct->memory - $oldProduct->memory;
         $requireDisk = $newProduct->disk - $oldProduct->disk;
-        if (!$this->pterodactyl->checkNodeResources($node, $requireMemory, $requireDisk)) {
+        if (!$this->phoenixpanel->checkNodeResources($node, $requireMemory, $requireDisk)) {
             return false;
         }
 
@@ -509,14 +509,14 @@ class ServerController extends Controller
 
     private function processUpgrade(Server $server, Product $oldProduct, Product $newProduct, User $user): void
     {
-        $server->allocation = $this->pterodactyl->getServerAttributes($server->pterodactyl_id)['allocation'];
+        $server->allocation = $this->phoenixpanel->getServerAttributes($server->phoenixpanel_id)['allocation'];
 
-        $response = $this->pterodactyl->updateServer($server, $newProduct);
+        $response = $this->phoenixpanel->updateServer($server, $newProduct);
         if ($response->failed()) {
-            throw new Exception("Failed to update server on Pterodactyl");
+            throw new Exception("Failed to update server on PhoenixPanel");
         }
 
-        $restartResponse = $this->pterodactyl->powerAction($server, 'restart');
+        $restartResponse = $this->phoenixpanel->powerAction($server, 'restart');
         if ($restartResponse->failed()) {
             throw new Exception('Could not restart the server: ' . $restartResponse->json()['errors'][0]['detail']);
         }
@@ -556,7 +556,7 @@ class ServerController extends Controller
             ->get();
 
         $availableNodes = $nodes->reject(function ($node) use ($product) {
-            return !$this->pterodactyl->checkNodeResources($node, $product->memory, $product->disk);
+            return !$this->phoenixpanel->checkNodeResources($node, $product->memory, $product->disk);
         });
 
         return $availableNodes->isEmpty() ? null : $availableNodes->first();

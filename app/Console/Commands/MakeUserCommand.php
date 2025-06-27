@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Classes\PterodactylClient;
+use App\Classes\PhoenixPanelClient;
 use App\Models\User;
-use App\Settings\PterodactylSettings;
+use App\Settings\PhoenixPanelSettings;
 use App\Traits\Referral;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
@@ -14,7 +14,7 @@ class MakeUserCommand extends Command
 {
     use Referral;
 
-    private $pterodactyl;
+    private $phoenixpanel;
 
     /**
      * The name and signature of the console command.
@@ -46,10 +46,10 @@ class MakeUserCommand extends Command
      *
      * @return int
      */
-    public function handle(PterodactylSettings $ptero_settings)
+    public function handle(PhoenixPanelSettings $ptero_settings)
     {
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
-        $ptero_id = $this->option('ptero_id') ?? $this->ask('Please specify your Pterodactyl ID.');
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
+        $ptero_id = $this->option('ptero_id') ?? $this->ask('Please specify your PhoenixPanel ID.');
         $password = $this->secret('password') ?? $this->ask('Please specify your password.');
 
         // Validate user input
@@ -68,7 +68,7 @@ class MakeUserCommand extends Command
         }
 
         //TODO: Do something with response (check for status code and give hints based upon that)
-        $response = $this->pterodactyl->getUser($ptero_id);
+        $response = $this->phoenixpanel->getUser($ptero_id);
 
         if (isset($response['errors'])) {
             if (isset($response['errors'][0]['code'])) {
@@ -88,14 +88,14 @@ class MakeUserCommand extends Command
             'email' => $response['email'],
             'password' => Hash::make($password),
             'referral_code' => $this->createReferralCode(),
-            'pterodactyl_id' => $response['id'],
+            'phoenixpanel_id' => $response['id'],
         ]);
 
         $this->table(['Field', 'Value'], [
             ['ID', $user->id],
             ['Email', $user->email],
             ['Username', $user->name],
-            ['Ptero-ID', $user->pterodactyl_id],
+            ['Ptero-ID', $user->phoenixpanel_id],
             ['Referral code', $user->referral_code],
         ]);
 

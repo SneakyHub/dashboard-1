@@ -12,7 +12,7 @@ use App\Models\TicketComment;
 use App\Models\User;
 use App\Notifications\Ticket\User\ReplyNotification;
 use App\Settings\LocaleSettings;
-use App\Settings\PterodactylSettings;
+use App\Settings\PhoenixPanelSettings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,7 +34,7 @@ class TicketsController extends Controller
         ]);
     }
 
-    public function show($ticket_id, PterodactylSettings $ptero_settings)
+    public function show($ticket_id, PhoenixPanelSettings $ptero_settings)
     {
         $this->checkAnyPermission([self::READ_PERMISSION, self::WRITE_PERMISSION]);
         try {
@@ -46,9 +46,9 @@ class TicketsController extends Controller
         $ticketcomments = $ticket->ticketcomments;
         $ticketcategory = $ticket->ticketcategory;
         $server = Server::where('id', $ticket->server)->first();
-        $pterodactyl_url = $ptero_settings->panel_url;
+        $phoenixpanel_url = $ptero_settings->panel_url;
 
-        return view('admin.ticket.show', compact('ticket', 'ticketcategory', 'ticketcomments', 'server', 'pterodactyl_url'));
+        return view('admin.ticket.show', compact('ticket', 'ticketcategory', 'ticketcomments', 'server', 'phoenixpanel_url'));
     }
 
     public function changeStatus($ticket_id)

@@ -1,7 +1,7 @@
 {
     "name": "cpgg/dashboard",
     "type": "project",
-    "description": "A billing and control panel made for Pterodactyl.",
+    "description": "A billing and control panel made for PhoenixPanel.",
     "keywords": [
         "framework",
         "laravel"

@@ -4,8 +4,8 @@ namespace App\Models;
 
 use App\Notifications\Auth\QueuedVerifyEmail;
 use App\Notifications\WelcomeMessage;
-use App\Classes\PterodactylClient;
-use App\Settings\PterodactylSettings;
+use App\Classes\PhoenixPanelClient;
+use App\Settings\PhoenixPanelSettings;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -28,7 +28,7 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory, Notifiable, LogsActivity, CausesActivity, HasRoles;
 
-    private PterodactylClient $pterodactyl;
+    private PhoenixPanelClient $phoenixpanel;
 
     /**
      * @var string[]
@@ -45,7 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'server_limit',
         'last_seen',
         'ip',
-        'pterodactyl_id',
+        'phoenixpanel_id',
     ];
 
     /**
@@ -63,7 +63,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'server_limit',
         'password',
-        'pterodactyl_id',
+        'phoenixpanel_id',
         'discord_verified_at',
         'avatar',
         'suspended',
@@ -98,8 +98,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         parent::__construct();
 
-        $ptero_settings = new PterodactylSettings();
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
+        $ptero_settings = new PhoenixPanelSettings();
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
     }
 
     public static function boot()
@@ -128,7 +128,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
             $user->discordUser()->delete();
 
-            $user->pterodactyl->application->delete("/application/users/{$user->pterodactyl_id}");
+            $user->phoenixpanel->application->delete("/application/users/{$user->phoenixpanel_id}");
         });
     }
 
@@ -327,7 +327,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['role', 'name', 'server_limit', 'pterodactyl_id', 'email', 'credits', 'server_limit', 'suspended', 'referral_code'])
+            ->logOnly(['role', 'name', 'server_limit', 'phoenixpanel_id', 'email', 'credits', 'server_limit', 'suspended', 'referral_code'])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->dontLogIfAttributesChangedOnly(['credits', 'server_limit']);

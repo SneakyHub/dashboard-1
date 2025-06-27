@@ -16,7 +16,7 @@ class ServerController extends Controller
 {
     public const ALLOWED_INCLUDES = ['product', 'user'];
 
-    public const ALLOWED_FILTERS = ['name', 'suspended', 'identifier', 'pterodactyl_id', 'user_id', 'product_id'];
+    public const ALLOWED_FILTERS = ['name', 'suspended', 'identifier', 'phoenixpanel_id', 'user_id', 'product_id'];
 
     /**
      * Display a listing of the resource.

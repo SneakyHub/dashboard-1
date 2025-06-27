@@ -4,9 +4,9 @@
 
 # CtrlPanel-gg
 
-CtrlPanel offers an easy-to-use and free billing solution for all starting and experienced hosting providers that seamlessly integrates with the Pterodactyl panel. It facilitates account creation, server ordering, and management, while offering addons, multiple payment methods, and customizable themes for a comprehensive solution.
+CtrlPanel offers an easy-to-use and free billing solution for all starting and experienced hosting providers that seamlessly integrates with the PhoenixPanel panel. It facilitates account creation, server ordering, and management, while offering addons, multiple payment methods, and customizable themes for a comprehensive solution.
 
-> ⚠️ **Important Notice:** CtrlPanel is **only compatible with Pterodactyl**. It does not support Pelican or any other hosting panels.
+> ⚠️ **Important Notice:** CtrlPanel is **only compatible with PhoenixPanel**. It does not support Pelican or any other hosting panels.
 
 ![GitHub tag](https://img.shields.io/github/tag/Ctrlpanel-gg/panel)
 ![Overall Installations](https://img.shields.io/badge/Overall%20Installations-5000%2B-green)
@@ -47,7 +47,7 @@ Demo Server: [demo.CtrlPanel.gg](https://demo.CtrlPanel.gg)
 docker run -d -p 8080:80 -p 8443:443 --name ctrlpanel ghcr.io/ctrlpanel-gg/panel:1.0.2
 ```
 
-CtrlPanel is now running on [0.0.0.0:8080](http://0.0.0.0:8080). Don't forget to configure the database and Pterodactyl.
+CtrlPanel is now running on [0.0.0.0:8080](http://0.0.0.0:8080). Don't forget to configure the database and PhoenixPanel.
 
 more info: [Docker](https://github.com/Ctrlpanel-gg/panel/blob/main/.github/docker/README.md)
 

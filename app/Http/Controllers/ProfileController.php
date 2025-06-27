@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Settings\UserSettings;
-use App\Settings\PterodactylSettings;
-use App\Classes\PterodactylClient;
+use App\Settings\PhoenixPanelSettings;
+use App\Classes\PhoenixPanelClient;
 use App\Settings\DiscordSettings;
 use App\Settings\ReferralSettings;
 use Illuminate\Http\RedirectResponse;
@@ -16,11 +16,11 @@ use Illuminate\Validation\ValidationException;
 
 class ProfileController extends Controller
 {
-    private $pterodactyl;
+    private $phoenixpanel;
 
-    public function __construct(PterodactylSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $ptero_settings)
     {
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
     }
 
     /** Display a listing of the resource. */
@@ -78,9 +78,9 @@ class ProfileController extends Controller
                 'new_password_confirmation' => 'required|same:new_password',
             ]);
 
-            //Update Users Password on Pterodactyl
+            //Update Users Password on PhoenixPanel
             //Username,Mail,First and Lastname are required aswell
-            $response = $this->pterodactyl->application->patch('/application/users/' . $user->pterodactyl_id, [
+            $response = $this->phoenixpanel->application->patch('/application/users/' . $user->phoenixpanel_id, [
                 'password' => $request->input('new_password'),
                 'username' => $request->input('name'),
                 'first_name' => $request->input('name'),
@@ -90,8 +90,8 @@ class ProfileController extends Controller
             ]);
             if ($response->failed()) {
                 throw ValidationException::withMessages([
-                    'pterodactyl_error_message' => $response->toException()->getMessage(),
-                    'pterodactyl_error_status' => $response->toException()->getCode(),
+                    'phoenixpanel_error_message' => $response->toException()->getMessage(),
+                    'phoenixpanel_error_status' => $response->toException()->getCode(),
                 ]);
             }
             //update password
@@ -123,8 +123,8 @@ class ProfileController extends Controller
             ]);
         }
 
-        //update name and email on Pterodactyl
-        $response = $this->pterodactyl->application->patch('/application/users/' . $user->pterodactyl_id, [
+        //update name and email on PhoenixPanel
+        $response = $this->phoenixpanel->application->patch('/application/users/' . $user->phoenixpanel_id, [
             'username' => $request->input('name'),
             'first_name' => $request->input('name'),
             'last_name' => $request->input('name'),
@@ -133,8 +133,8 @@ class ProfileController extends Controller
 
         if ($response->failed()) {
             throw ValidationException::withMessages([
-                'pterodactyl_error_message' => $response->toException()->getMessage(),
-                'pterodactyl_error_status' => $response->toException()->getCode(),
+                'phoenixpanel_error_message' => $response->toException()->getMessage(),
+                'phoenixpanel_error_status' => $response->toException()->getCode(),
             ]);
         }
 

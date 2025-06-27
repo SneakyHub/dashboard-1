@@ -1,8 +1,8 @@
 <!-- top layout here -->
 
 <?php echo cardStart(
-    $title = "Pterodactyl Configuration",
-    $subtitle = "Lets get some info about your Pterodactyl Installation!"
+    $title = "PhoenixPanel Configuration",
+    $subtitle = "Lets get some info about your PhoenixPanel Installation!"
 ); ?>
 
 <form method="POST" enctype="multipart/form-data" class="m-0" action="/installer/index.php" name="checkPtero">
@@ -15,7 +15,7 @@
         <div class="col-md-12">
             <div class="form-group">
                 <div class="flex flex-col mb-3">
-                    <label for="url">Pterodactyl URL</label>
+                    <label for="url">PhoenixPanel URL</label>
                     <input id="url" name="url" type="text" required placeholder="https://ptero.example.com" class="px-2 py-1 bg-[#1D2125] border-2 focus:border-sky-500 box-border rounded-md border-transparent outline-none">
                 </div>
             </div>

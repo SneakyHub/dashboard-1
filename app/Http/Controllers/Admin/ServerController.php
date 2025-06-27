@@ -7,8 +7,8 @@ use App\Models\Server;
 use App\Models\User;
 use App\Settings\DiscordSettings;
 use App\Settings\LocaleSettings;
-use App\Settings\PterodactylSettings;
-use App\Classes\PterodactylClient;
+use App\Settings\PhoenixPanelSettings;
+use App\Classes\PhoenixPanelClient;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -28,11 +28,11 @@ class ServerController extends Controller
     const CHANGEOWNER_PERMISSION = "admin.servers.write.owner";
     const CHANGE_IDENTIFIER_PERMISSION = "admin.servers.write.identifier";
     const DELETE_PERMISSION = "admin.servers.delete";
-    private $pterodactyl;
+    private $phoenixpanel;
 
-    public function __construct(PterodactylSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $ptero_settings)
     {
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
     }
 
     /**
@@ -89,11 +89,11 @@ class ServerController extends Controller
             // find the user
             $user = User::findOrFail($request->get('user_id'));
 
-            // try to update the owner on pterodactyl
+            // try to update the owner on phoenixpanel
             try {
-                $response = $this->pterodactyl->updateServerOwner($server, $user->pterodactyl_id);
+                $response = $this->phoenixpanel->updateServerOwner($server, $user->phoenixpanel_id);
                 if ($response->getStatusCode() != 200) {
-                    return redirect()->back()->with('error', 'Failed to update server owner on pterodactyl');
+                    return redirect()->back()->with('error', 'Failed to update server owner on phoenixpanel');
                 }
 
                 // Attempt to remove/add roles respectively
@@ -157,7 +157,7 @@ class ServerController extends Controller
                 log::debug('Failed to update discord roles' . $e->getMessage());
             }
 
-            // Attempt to remove the server from pterodactyl
+            // Attempt to remove the server from phoenixpanel
             $server->delete();
 
             return redirect()->route('admin.servers.index')->with('success', __('Server removed'));
@@ -208,18 +208,18 @@ class ServerController extends Controller
         $CPIDArray = [];
         $renameCount = 0;
         foreach ($CPServers as $CPServer) { //go thru all CP servers and make array with IDs as keys. All values are false.
-            if ($CPServer->pterodactyl_id) {
-                $CPIDArray[$CPServer->pterodactyl_id] = false;
+            if ($CPServer->phoenixpanel_id) {
+                $CPIDArray[$CPServer->phoenixpanel_id] = false;
             }
         }
 
-        foreach ($this->pterodactyl->getServers() as $server) { //go thru all ptero servers, if server exists, change value to true in array.
+        foreach ($this->phoenixpanel->getServers() as $server) { //go thru all ptero servers, if server exists, change value to true in array.
             if (isset($CPIDArray[$server['attributes']['id']])) {
                 $CPIDArray[$server['attributes']['id']] = true;
 
                 if (isset($server['attributes']['name'])) { //failsafe
                     //Check if a server got renamed
-                    $savedServer = Server::query()->where('pterodactyl_id', $server['attributes']['id'])->first();
+                    $savedServer = Server::query()->where('phoenixpanel_id', $server['attributes']['id'])->first();
                     if ($savedServer->name != $server['attributes']['name']) {
                         $savedServer->name = $server['attributes']['name'];
                         $savedServer->save();
@@ -233,7 +233,7 @@ class ServerController extends Controller
         }, ARRAY_FILTER_USE_BOTH); //Array of servers, that dont exist on ptero (value == false)
         $deleteCount = 0;
         foreach ($filteredArray as $key => $CPID) { //delete servers that dont exist on ptero anymore
-            if (!$this->pterodactyl->getServerAttributes($key, true)) {
+            if (!$this->phoenixpanel->getServerAttributes($key, true)) {
                 $deleteCount++;
             }
         }
@@ -300,8 +300,8 @@ class ServerController extends Controller
             ->editColumn('suspended', function (Server $server) {
                 return $server->suspended ? $server->suspended->diffForHumans() : '';
             })
-            ->editColumn('name', function (Server $server, PterodactylSettings $ptero_settings) {
-                return '<a class="text-info" target="_blank" href="' . $ptero_settings->panel_url . '/admin/servers/view/' . $server->pterodactyl_id . '">' . strip_tags($server->name) . '</a>';
+            ->editColumn('name', function (Server $server, PhoenixPanelSettings $ptero_settings) {
+                return '<a class="text-info" target="_blank" href="' . $ptero_settings->panel_url . '/admin/servers/view/' . $server->phoenixpanel_id . '">' . strip_tags($server->name) . '</a>';
             })
             ->rawColumns(['user', 'actions', 'status', 'name'])
             ->make();

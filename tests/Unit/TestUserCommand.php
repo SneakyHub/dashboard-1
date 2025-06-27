@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Classes\Pterodactyl;
+use App\Classes\PhoenixPanel;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
@@ -21,13 +21,13 @@ class TestUserCommand extends TestCase
      */
     public function testMakeUserCommand(array $apiResponse, int $expectedExitCode): void
     {
-        $pterodactyl = $this->getMockBuilder(Pterodactyl::class)->getMock();
-        $pterodactyl->expects(self::once())->method('getUser')->willReturn($apiResponse);
+        $phoenixpanel = $this->getMockBuilder(PhoenixPanel::class)->getMock();
+        $phoenixpanel->expects(self::once())->method('getUser')->willReturn($apiResponse);
 
-        $this->app->instance(Pterodactyl::class, $pterodactyl);
+        $this->app->instance(PhoenixPanel::class, $phoenixpanel);
 
         $this->artisan('make:user')
-            ->expectsQuestion('Please specify your Pterodactyl ID.', 0)
+            ->expectsQuestion('Please specify your PhoenixPanel ID.', 0)
             ->expectsQuestion('Please specify your password.', 'password')
             ->assertExitCode($expectedExitCode);
     }

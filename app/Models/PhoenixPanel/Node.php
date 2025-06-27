@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Pterodactyl;
+namespace App\Models\PhoenixPanel;
 
-use App\Classes\PterodactylClient;
+use App\Classes\PhoenixPanelClient;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -33,7 +33,7 @@ class Node extends Model
     public static function syncNodes()
     {
         Location::syncLocations();
-        $client = app(PterodactylClient::class);
+        $client = app(PhoenixPanelClient::class);
         $nodes = $client->getNodes();
 
         //map response
@@ -64,7 +64,7 @@ class Node extends Model
     }
 
     /**
-     * @description remove nodes that have been deleted on pterodactyl
+     * @description remove nodes that have been deleted on phoenixpanel
      *
      * @param  array  $nodes
      */

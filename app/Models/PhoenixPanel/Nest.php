@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Pterodactyl;
+namespace App\Models\PhoenixPanel;
 
-use App\Classes\PterodactylClient;
+use App\Classes\PhoenixPanelClient;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,7 +32,7 @@ class Nest extends Model
 
     public static function syncNests()
     {
-        $client = app(PterodactylClient::class);
+        $client = app(PhoenixPanelClient::class);
         $nests = $client->getNests();
 
         //map response
@@ -58,7 +58,7 @@ class Nest extends Model
     }
 
     /**
-     * @description remove nests that have been deleted on pterodactyl
+     * @description remove nests that have been deleted on phoenixpanel
      *
      * @param  array  $nests
      */

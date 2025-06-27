@@ -8,7 +8,7 @@ This development environment utilizes standalone Docker with necessary tools pre
 - Tools like phpMyAdmin
 
 ## Not Included Services (for the moment)
-- Pterodactyl
+- PhoenixPanel
 - Wings
 
 Feel free to modify the Docker Compose file to remove any services you already have.

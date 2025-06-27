@@ -119,7 +119,7 @@
                         <div class="card-header">
                             <div class="d-flex justify-content-between">
                                 <div class="card-title ">
-                                    <span><i class="mr-2 fas fa-kiwi-bird"></i>{{__('Pterodactyl')}}</span>
+                                    <span><i class="mr-2 fas fa-kiwi-bird"></i>{{__('PhoenixPanel')}}</span>
                                 </div>
                                 <a href="{{route('admin.overview.sync')}}" class="btn btn-primary btn-sm"><i
                                         class="mr-2 fas fa-sync"></i>{{__('Sync')}}</a>
@@ -130,7 +130,7 @@
                                 <div class="m-2 alert alert-danger">
                                     <h5><i class="icon fas fa-exclamation-circle"></i>{{ __('Warning!') }}</h5>
                                     <p class="mb-2">
-                                        {{ __('Some nodes got deleted on pterodactyl only. Please click the sync button above.') }}
+                                        {{ __('Some nodes got deleted on phoenixpanel only. Please click the sync button above.') }}
                                     </p>
                                 </div>
                             @endif
@@ -233,9 +233,9 @@
                                 <div class="m-2 alert alert-danger">
                                     <h5><i class="icon fas fa-exclamation-circle"></i>{{ __('Error!') }}</h5>
                                     <p class="mb-2">
-                                        {{ __('You reached the Pterodactyl perPage limit. Please make sure to set it higher than your server count.') }}<br>
+                                        {{ __('You reached the PhoenixPanel perPage limit. Please make sure to set it higher than your server count.') }}<br>
                                         {{ __('You can do that in settings.') }}<br><br>
-                                        {{ __('Note') }}: {{ __('If this error persists even after changing the limit, it might mean a server was deleted on Pterodactyl, but not on CtrlPanel. Try clicking the button below.') }}
+                                        {{ __('Note') }}: {{ __('If this error persists even after changing the limit, it might mean a server was deleted on PhoenixPanel, but not on CtrlPanel. Try clicking the button below.') }}
                                     </p>
                                     <a href="{{route('admin.servers.sync')}}" class="btn btn-primary btn-md"><i
                                         class="mr-2 fas fa-sync"></i>{{__('Sync servers')}}</a>

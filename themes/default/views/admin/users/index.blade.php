@@ -41,7 +41,7 @@
                         <tr>
                             <th>discordId</th>
                             <th>ip</th>
-                            <th>pterodactyl_id</th>
+                            <th>phoenixpanel_id</th>
                             <th>{{__('Avatar')}}</th>
                             <th>{{__('Name')}}</th>
                             <th>{{__('Role')}}</th>
@@ -91,7 +91,7 @@
                         name: 'discordUser.id'
                     },
                     {
-                        data: 'pterodactyl_id',
+                        data: 'phoenixpanel_id',
                         visible: false
                     },
                     {

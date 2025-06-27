@@ -1,6 +1,6 @@
 <?php
 if (isset($_POST['checkPtero'])) {
-    wh_log('Checking Pterodactyl Settings', 'debug');
+    wh_log('Checking PhoenixPanel Settings', 'debug');
 
     $url = $_POST['url'];
     $key = $_POST['key'];
@@ -26,7 +26,7 @@ if (isset($_POST['checkPtero'])) {
     curl_setopt($call, CURLOPT_URL, $callpteroURL);
     curl_setopt($call, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($call, CURLOPT_HTTPHEADER, [
-        'Accept: Application/vnd.pterodactyl.v1+json',
+        'Accept: Application/vnd.phoenixpanel.v1+json',
         'Content-Type: application/json',
         'Authorization: Bearer ' . $clientkey,
     ]);
@@ -40,7 +40,7 @@ if (isset($_POST['checkPtero'])) {
     curl_setopt($ch, CURLOPT_URL, $pteroURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Accept: Application/vnd.pterodactyl.v1+json',
+        'Accept: Application/vnd.phoenixpanel.v1+json',
         'Content-Type: application/json',
         'Authorization: Bearer ' . $key,
     ]);
@@ -55,7 +55,7 @@ if (isset($_POST['checkPtero'])) {
 
     if (array_key_exists('errors', $result) && $result['errors'][0]['detail'] === 'This action is unauthorized.') {
         wh_log('API CALL ERROR: ' . $result['errors'][0]['code'], 'error');
-        send_error_message("Couldn\'t connect to Pterodactyl. Make sure your Application API key has all read and write permissions!");
+        send_error_message("Couldn\'t connect to PhoenixPanel. Make sure your Application API key has all read and write permissions!");
         exit();
     }
 
@@ -66,13 +66,13 @@ if (isset($_POST['checkPtero'])) {
     }
 
     try {
-        run_console("php artisan settings:set 'PterodactylSettings' 'panel_url' '$url'", null,null,null,false);
-        run_console("php artisan settings:set 'PterodactylSettings' 'admin_token' '$key'", null,null,null,false);
-        run_console("php artisan settings:set 'PterodactylSettings' 'user_token' '$clientkey'", null,null,null,false);
-        wh_log('Database updated with pterodactyl Settings.', 'debug');
+        run_console("php artisan settings:set 'PhoenixPanelSettings' 'panel_url' '$url'", null,null,null,false);
+        run_console("php artisan settings:set 'PhoenixPanelSettings' 'admin_token' '$key'", null,null,null,false);
+        run_console("php artisan settings:set 'PhoenixPanelSettings' 'user_token' '$clientkey'", null,null,null,false);
+        wh_log('Database updated with phoenixpanel Settings.', 'debug');
         next_step();
     } catch (Throwable $th) {
-        wh_log("Setting Pterodactyl information failed. ".$th->getMessage(), 'error');
+        wh_log("Setting PhoenixPanel information failed. ".$th->getMessage(), 'error');
         send_error_message($th->getMessage() . " <br>Please check the installer.log file in " . dirname(__DIR__,4) . '/storage/logs' . "!");
         exit();
     }

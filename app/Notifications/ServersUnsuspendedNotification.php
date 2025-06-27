@@ -2,7 +2,7 @@
 
 namespace App\Notifications;
 
-use App\Settings\PterodactylSettings;
+use App\Settings\PhoenixPanelSettings;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -12,7 +12,7 @@ class ServersUnsuspendedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    protected $pterodactylSettings;
+    protected $phoenixpanelSettings;
     protected $servers;
 
     /**
@@ -20,7 +20,7 @@ class ServersUnsuspendedNotification extends Notification implements ShouldQueue
      */
     public function __construct($servers)
     {
-        $this->pterodactylSettings = app(PterodactylSettings::class);
+        $this->phoenixpanelSettings = app(PhoenixPanelSettings::class);
         $this->servers = $servers;
     }
 
@@ -43,7 +43,7 @@ class ServersUnsuspendedNotification extends Notification implements ShouldQueue
                     ->subject(__('Your servers have been unsuspended'))
                     ->markdown('mail.server.unsuspended', [
                         'servers' => $this->servers,
-                        'pterodactylSettings' => $this->pterodactylSettings,
+                        'phoenixpanelSettings' => $this->phoenixpanelSettings,
                     ]);
     }
 

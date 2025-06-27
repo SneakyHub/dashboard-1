@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Pterodactyl\Location;
-use App\Models\Pterodactyl\Nest;
+use App\Models\PhoenixPanel\Location;
+use App\Models\PhoenixPanel\Nest;
 use App\Models\Product;
 use App\Settings\GeneralSettings;
 use App\Settings\LocaleSettings;

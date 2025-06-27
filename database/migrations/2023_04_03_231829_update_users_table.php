@@ -14,7 +14,7 @@ return new class extends Migration
     public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('pterodactyl_id')->change();
+            $table->string('phoenixpanel_id')->change();
         });
     }
 
@@ -26,7 +26,7 @@ return new class extends Migration
     public function down()
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->integer('pterodactyl_id')->nullable()->change();
+            $table->integer('phoenixpanel_id')->nullable()->change();
         });
     }
 };

@@ -8,8 +8,8 @@ use App\Notifications\ReferralNotification;
 use App\Providers\RouteServiceProvider;
 use App\Traits\Referral;
 use Carbon\Carbon;
-use App\Settings\PterodactylSettings;
-use App\Classes\PterodactylClient;
+use App\Settings\PhoenixPanelSettings;
+use App\Classes\PhoenixPanelClient;
 use App\Settings\GeneralSettings;
 use App\Settings\ReferralSettings;
 use App\Settings\UserSettings;
@@ -26,7 +26,7 @@ use Spatie\Permission\Models\Role;
 
 class RegisterController extends Controller
 {
-    private $pterodactyl;
+    private $phoenixpanel;
 
     private $credits_display_name;
 
@@ -68,10 +68,10 @@ class RegisterController extends Controller
      *
      * @return void
      */
-    public function __construct(PterodactylSettings $ptero_settings, GeneralSettings $general_settings, WebsiteSettings $website_settings, UserSettings $user_settings, ReferralSettings $referral_settings)
+    public function __construct(PhoenixPanelSettings $ptero_settings, GeneralSettings $general_settings, WebsiteSettings $website_settings, UserSettings $user_settings, ReferralSettings $referral_settings)
     {
         $this->middleware('guest');
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
         $this->credits_display_name = $general_settings->credits_display_name;
         $this->recaptcha_version = $general_settings->recaptcha_version;
         $this->website_show_tos = $website_settings->show_tos;
@@ -142,12 +142,12 @@ class RegisterController extends Controller
             'server_limit' => $this->initial_server_limit,
             'password' => Hash::make($data['password']),
             'referral_code' => $this->createReferralCode(),
-            'pterodactyl_id' => Str::uuid(),
+            'phoenixpanel_id' => Str::uuid(),
         ]);
 
         $user->syncRoles(Role::findById(4)); //user
 
-        $response = $this->pterodactyl->application->post('/application/users', [
+        $response = $this->phoenixpanel->application->post('/application/users', [
             'external_id' => null,
             'username' => $user->name,
             'email' => $user->email,
@@ -160,22 +160,22 @@ class RegisterController extends Controller
 
         if ($response->failed()) {
             $user->delete();
-            Log::error('Pterodactyl Registration Error: ' . ($response->json()['errors'][0]['detail'] ?? 'Unknown error'));
+            Log::error('PhoenixPanel Registration Error: ' . ($response->json()['errors'][0]['detail'] ?? 'Unknown error'));
             throw ValidationException::withMessages([
-                'ptero_registration_error' => [__('Failed to create account on Pterodactyl. Please contact Support!')],
+                'ptero_registration_error' => [__('Failed to create account on PhoenixPanel. Please contact Support!')],
             ]);
         }
 
         if (!isset($response->json()['attributes']['id'])) {
             $user->delete();
-            Log::error('Pterodactyl Registration Error: Missing user ID in response');
+            Log::error('PhoenixPanel Registration Error: Missing user ID in response');
             throw ValidationException::withMessages([
-                'ptero_registration_error' => [__('Failed to create account on Pterodactyl. Please contact Support!')],
+                'ptero_registration_error' => [__('Failed to create account on PhoenixPanel. Please contact Support!')],
             ]);
         }
 
         $user->update([
-            'pterodactyl_id' => $response->json()['attributes']['id'],
+            'phoenixpanel_id' => $response->json()['attributes']['id'],
         ]);
 
         // delete activity log for user creation where description = 'created' or 'deleted' and subject_id = user_id

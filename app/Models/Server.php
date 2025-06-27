@@ -3,8 +3,8 @@
 namespace App\Models;
 
 use Carbon\Carbon;
-use App\Classes\PterodactylClient;
-use App\Settings\PterodactylSettings;
+use App\Classes\PhoenixPanelClient;
+use App\Settings\PhoenixPanelSettings;
 use Exception;
 use GuzzleHttp\Promise\PromiseInterface;
 use Hidehalo\Nanoid\Client;
@@ -24,7 +24,7 @@ class Server extends Model
     use HasFactory;
     use LogsActivity;
 
-    private PterodactylClient $pterodactyl;
+    private PhoenixPanelClient $phoenixpanel;
 
     public function getActivitylogOptions(): LogOptions
     {
@@ -42,7 +42,7 @@ class Server extends Model
     /**
      * @var string[]
      */
-    protected static $ignoreChangedAttributes = ['pterodactyl_id', 'identifier', 'updated_at'];
+    protected static $ignoreChangedAttributes = ['phoenixpanel_id', 'identifier', 'updated_at'];
 
     /**
      * @var string[]
@@ -58,7 +58,7 @@ class Server extends Model
         "suspended",
         "identifier",
         "product_id",
-        "pterodactyl_id",
+        "phoenixpanel_id",
         "last_billed",
         "canceled"
     ];
@@ -74,8 +74,8 @@ class Server extends Model
     {
         parent::__construct();
 
-        $ptero_settings = new PterodactylSettings();
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
+        $ptero_settings = new PhoenixPanelSettings();
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
     }
 
     public static function boot()
@@ -89,8 +89,8 @@ class Server extends Model
         });
 
         static::deleting(function (Server $server) {
-            $response = $server->pterodactyl->application->delete("/application/servers/{$server->pterodactyl_id}");
-            if ($response->failed() && !is_null($server->pterodactyl_id)) {
+            $response = $server->phoenixpanel->application->delete("/application/servers/{$server->phoenixpanel_id}");
+            if ($response->failed() && !is_null($server->phoenixpanel_id)) {
                 //only return error when it's not a 404 error
                 if ($response['errors'][0]['status'] != '404') {
                     throw new Exception($response['errors'][0]['code']);
@@ -110,9 +110,9 @@ class Server extends Model
     /**
      * @return PromiseInterface|Response
      */
-    public function getPterodactylServer()
+    public function getPhoenixPanelServer()
     {
-        return $this->pterodactyl->application->get("/application/servers/{$this->pterodactyl_id}");
+        return $this->phoenixpanel->application->get("/application/servers/{$this->phoenixpanel_id}");
     }
 
     /**
@@ -120,7 +120,7 @@ class Server extends Model
      */
     public function suspend()
     {
-        $response = $this->pterodactyl->suspendServer($this);
+        $response = $this->phoenixpanel->suspendServer($this);
 
         if ($response->successful()) {
             $this->update([
@@ -136,7 +136,7 @@ class Server extends Model
      */
     public function unSuspend()
     {
-        $response = $this->pterodactyl->unSuspendServer($this);
+        $response = $this->phoenixpanel->unSuspendServer($this);
 
         if ($response->successful()) {
             $this->update([

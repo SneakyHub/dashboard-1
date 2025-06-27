@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('role')->default('member');
             $table->float('credits')->default(250)->unsigned();
             $table->unsignedInteger('server_limit')->default(1);
-            $table->unsignedInteger('pterodactyl_id')->nullable();
+            $table->unsignedInteger('phoenixpanel_id')->nullable();
             $table->longText('avatar')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();

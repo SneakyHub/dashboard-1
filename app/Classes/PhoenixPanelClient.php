@@ -2,21 +2,21 @@
 
 namespace App\Classes;
 
-use App\Models\Pterodactyl\Egg;
-use App\Models\Pterodactyl\Nest;
-use App\Models\Pterodactyl\Node;
+use App\Models\PhoenixPanel\Egg;
+use App\Models\PhoenixPanel\Nest;
+use App\Models\PhoenixPanel\Node;
 use App\Models\Product;
 use App\Models\Server;
 use Exception;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Http;
-use App\Settings\PterodactylSettings;
+use App\Settings\PhoenixPanelSettings;
 use App\Settings\ServerSettings;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-class PterodactylClient
+class PhoenixPanelClient
 {
     //TODO: Extend error handling (maybe logger for more errors when debugging)
 
@@ -28,7 +28,7 @@ class PterodactylClient
 
     public PendingRequest $application;
 
-    public function __construct(PterodactylSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $ptero_settings)
     {
         $server_settings = new ServerSettings();
 
@@ -38,27 +38,27 @@ class PterodactylClient
             $this->per_page_limit = $ptero_settings->per_page_limit;
             $this->allocation_limit = $server_settings->allocation_limit;
         } catch (Exception $exception) {
-            logger('Failed to construct Pterodactyl client, Settings table not available?', ['exception' => $exception]);
+            logger('Failed to construct PhoenixPanel client, Settings table not available?', ['exception' => $exception]);
         }
     }
     /**
      * @return PendingRequest
      */
-    public function client(PterodactylSettings $ptero_settings)
+    public function client(PhoenixPanelSettings $ptero_settings)
     {
         return Http::withHeaders([
             'Authorization' => 'Bearer ' . $ptero_settings->user_token,
             'Content-type' => 'application/json',
-            'Accept' => 'Application/vnd.pterodactyl.v1+json',
+            'Accept' => 'Application/vnd.phoenixpanel.v1+json',
         ])->baseUrl($ptero_settings->getUrl() . 'api' . '/');
     }
 
-    public function clientAdmin(PterodactylSettings $ptero_settings)
+    public function clientAdmin(PhoenixPanelSettings $ptero_settings)
     {
         return Http::withHeaders([
             'Authorization' => 'Bearer ' . $ptero_settings->admin_token,
             'Content-type' => 'application/json',
-            'Accept' => 'Application/vnd.pterodactyl.v1+json',
+            'Accept' => 'Application/vnd.phoenixpanel.v1+json',
         ])->baseUrl($ptero_settings->getUrl() . 'api' . '/');
     }
 
@@ -67,32 +67,32 @@ class PterodactylClient
      */
     private function getException(string $message = '', int $status = null): HttpException
     {
-        Log::Error('PterodactylClient: ' . $message);
+        Log::Error('PhoenixPanelClient: ' . $message);
         if ($status == 404) {
-            return new HttpException(404,'Resource does not exist on pterodactyl - ' . $message . ' Was a Server deleted from Pterodactyl but not from the Panel? Have an Admin Remove it from the Panel');
+            return new HttpException(404,'Resource does not exist on phoenixpanel - ' . $message . ' Was a Server deleted from PhoenixPanel but not from the Panel? Have an Admin Remove it from the Panel');
         }
 
         if ($status == 403) {
-            return new HttpException(403, 'No permission on pterodactyl, check pterodactyl token and permissions - ' . $message);
+            return new HttpException(403, 'No permission on phoenixpanel, check phoenixpanel token and permissions - ' . $message);
         }
 
         if ($status == 401) {
-            return new HttpException(401,'No pterodactyl token set - ' . $message);
+            return new HttpException(401,'No phoenixpanel token set - ' . $message);
         }
 
         if ($status == 500) {
-            return new HttpException(500,'Pterodactyl server error - ' . $message);
+            return new HttpException(500,'PhoenixPanel server error - ' . $message);
         }
 
         if ($status == 0) {
-            return new HttpException(500, 'Unable to connect to Pterodactyl node - Please check if the node is online and accessible' . $message);
+            return new HttpException(500, 'Unable to connect to PhoenixPanel node - Please check if the node is online and accessible' . $message);
         }
 
         if ($status >= 500 && $status < 600) {
-            return new HttpException($status,'Pterodactyl node error (HTTP ' . $status . ') - ' . $message);
+            return new HttpException($status,'PhoenixPanel node error (HTTP ' . $status . ') - ' . $message);
         }
 
-        return new Exception('Request Failed, is pterodactyl set-up correctly? - ' . $message);
+        return new Exception('Request Failed, is phoenixpanel set-up correctly? - ' . $message);
     }
 
     /**
@@ -109,7 +109,7 @@ class PterodactylClient
             throw self::getException($e->getMessage());
         }
         if ($response->failed()) {
-            throw self::getException('Failed to get eggs from pterodactyl - ', $response->status());
+            throw self::getException('Failed to get eggs from phoenixpanel - ', $response->status());
         }
 
         return $response->json()['data'];
@@ -128,7 +128,7 @@ class PterodactylClient
             throw self::getException($e->getMessage());
         }
         if ($response->failed()) {
-            throw self::getException('Failed to get nodes from pterodactyl - ', $response->status());
+            throw self::getException('Failed to get nodes from phoenixpanel - ', $response->status());
         }
 
         return $response->json()['data'];
@@ -181,7 +181,7 @@ class PterodactylClient
             throw self::getException($e->getMessage());
         }
         if ($response->failed()) {
-            throw self::getException('Failed to get nests from pterodactyl', $response->status());
+            throw self::getException('Failed to get nests from phoenixpanel', $response->status());
         }
 
         return $response->json()['data'];
@@ -200,7 +200,7 @@ class PterodactylClient
             throw self::getException($e->getMessage());
         }
         if ($response->failed()) {
-            throw self::getException('Failed to get locations from pterodactyl - ', $response->status());
+            throw self::getException('Failed to get locations from phoenixpanel - ', $response->status());
         }
 
         return $response->json()['data'];
@@ -255,7 +255,7 @@ class PterodactylClient
             throw self::getException($e->getMessage());
         }
         if ($response->failed()) {
-            throw self::getException('Failed to get allocations from pterodactyl - ', $response->status());
+            throw self::getException('Failed to get allocations from phoenixpanel - ', $response->status());
         }
 
         return $response->json();
@@ -273,7 +273,7 @@ class PterodactylClient
             $response = $this->application->post('application/servers', [
                 'name' => $server->name,
                 'external_id' => $server->id,
-                'user' => $server->user->pterodactyl_id,
+                'user' => $server->user->phoenixpanel_id,
                 'egg' => $egg->id,
                 'docker_image' => $egg->docker_image,
                 'startup' => $egg->startup,
@@ -297,7 +297,7 @@ class PterodactylClient
             ]);
 
             if ($response->failed()) {
-                throw self::getException('Failed to create server on pterodactyl', $response->status());
+                throw self::getException('Failed to create server on phoenixpanel', $response->status());
             }
 
             return $response;
@@ -309,12 +309,12 @@ class PterodactylClient
     public function suspendServer(Server $server)
     {
         try {
-            $response = $this->application->post("application/servers/$server->pterodactyl_id/suspend");
+            $response = $this->application->post("application/servers/$server->phoenixpanel_id/suspend");
         } catch (Exception $e) {
             throw self::getException($e->getMessage());
         }
         if ($response->failed()) {
-            throw self::getException('Failed to suspend server from pterodactyl - ', $response->status());
+            throw self::getException('Failed to suspend server from phoenixpanel - ', $response->status());
         }
 
         return $response;
@@ -323,47 +323,47 @@ class PterodactylClient
     public function unSuspendServer(Server $server)
     {
         try {
-            $response = $this->application->post("application/servers/$server->pterodactyl_id/unsuspend");
+            $response = $this->application->post("application/servers/$server->phoenixpanel_id/unsuspend");
         } catch (Exception $e) {
             throw self::getException($e->getMessage());
         }
         if ($response->failed()) {
-            throw self::getException('Failed to unsuspend server from pterodactyl - ', $response->status());
+            throw self::getException('Failed to unsuspend server from phoenixpanel - ', $response->status());
         }
 
         return $response;
     }
 
     /**
-     * Get user by pterodactyl id
+     * Get user by phoenixpanel id
      *
-     * @param  int  $pterodactylId
+     * @param  int  $phoenixpanelId
      * @return mixed
      */
-    public function getUser(int $pterodactylId)
+    public function getUser(int $phoenixpanelId)
     {
         try {
-            $response = $this->application->get("application/users/{$pterodactylId}");
+            $response = $this->application->get("application/users/{$phoenixpanelId}");
         } catch (Exception $e) {
             throw self::getException($e->getMessage());
         }
         if ($response->failed()) {
-            throw self::getException('Failed to get user from pterodactyl - ', $response->status());
+            throw self::getException('Failed to get user from phoenixpanel - ', $response->status());
         }
 
         return $response->json()['attributes'];
     }
 
     /**
-     * Get serverAttributes by pterodactyl id
+     * Get serverAttributes by phoenixpanel id
      *
-     * @param  int  $pterodactylId
+     * @param  int  $phoenixpanelId
      * @return mixed
      */
-    public function getServerAttributes(int $pterodactylId, bool $deleteOn404 = false)
+    public function getServerAttributes(int $phoenixpanelId, bool $deleteOn404 = false)
     {
         try {
-            $response = $this->application->get("application/servers/{$pterodactylId}?include=egg,node,nest,location");
+            $response = $this->application->get("application/servers/{$phoenixpanelId}?include=egg,node,nest,location");
         } catch (Exception $e) {
             throw self::getException($e->getMessage());
         }
@@ -371,12 +371,12 @@ class PterodactylClient
         //print response body
 
         if ($response->failed()) {
-            if ($deleteOn404) {  //Delete the server if it does not exist (server deleted on pterodactyl)
-                Server::where('pterodactyl_id', $pterodactylId)->first()->delete();
+            if ($deleteOn404) {  //Delete the server if it does not exist (server deleted on phoenixpanel)
+                Server::where('phoenixpanel_id', $phoenixpanelId)->first()->delete();
 
                 return;
             } else {
-                throw self::getException('Failed to get server attributes from pterodactyl - ', $response->status());
+                throw self::getException('Failed to get server attributes from phoenixpanel - ', $response->status());
             }
         }
 
@@ -392,7 +392,7 @@ class PterodactylClient
      */
     public function updateServer(Server $server, Product $product)
     {
-        return $this->application->patch("application/servers/{$server->pterodactyl_id}/build", [
+        return $this->application->patch("application/servers/{$server->phoenixpanel_id}/build", [
             'allocation' => $server->allocation,
             'memory' => $product->memory,
             'swap' => $product->swap,
@@ -418,7 +418,7 @@ class PterodactylClient
      */
     public function updateServerOwner(Server $server, int $userId)
     {
-        return $this->application->patch("application/servers/{$server->pterodactyl_id}/details", [
+        return $this->application->patch("application/servers/{$server->phoenixpanel_id}/details", [
             'name' => $server->name,
             'user' => $userId,
         ]);

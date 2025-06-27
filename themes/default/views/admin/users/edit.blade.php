@@ -54,18 +54,18 @@
                                     @enderror
                                 </div>
                                 <div class="form-group">
-                                    <label for="pterodactyl_id">{{__('Pterodactyl ID')}}</label>
-                                    <input value="{{$user->pterodactyl_id}}" id="pterodactyl_id" name="pterodactyl_id"
+                                    <label for="phoenixpanel_id">{{__('PhoenixPanel ID')}}</label>
+                                    <input value="{{$user->phoenixpanel_id}}" id="phoenixpanel_id" name="phoenixpanel_id"
                                            type="number"
-                                           class="form-control @error('pterodactyl_id') is-invalid @enderror"
+                                           class="form-control @error('phoenixpanel_id') is-invalid @enderror"
                                            required="required">
-                                    @error('pterodactyl_id')
+                                    @error('phoenixpanel_id')
                                     <div class="invalid-feedback">
                                         {{$message}}
                                     </div>
                                     @enderror
                                     <div class="text-muted">
-                                        {{__('This ID refers to the user account created on pterodactyls panel.')}} <br>
+                                        {{__('This ID refers to the user account created on phoenixpanels panel.')}} <br>
                                         <small>{{__('Only edit this if you know what youre doing :)')}}</small>
                                     </div>
                                 </div>

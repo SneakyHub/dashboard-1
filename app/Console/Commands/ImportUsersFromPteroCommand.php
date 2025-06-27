@@ -112,7 +112,7 @@ class ImportUsersFromPteroCommand extends Command
             $role = $user->root_admin == '0' ? 'member' : 'admin';
 
             User::create([
-                'pterodactyl_id' => $user->id,
+                'phoenixpanel_id' => $user->id,
                 'name' => $user->name_first,
                 'email' => $user->email,
                 'password' => $user->password,
@@ -125,7 +125,7 @@ class ImportUsersFromPteroCommand extends Command
         });
 
         $this->newLine();
-        $this->line('Done importing, you can now login using your pterodactyl credentials.');
+        $this->line('Done importing, you can now login using your phoenixpanel credentials.');
         $this->newLine();
     }
 }

@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Models\Pterodactyl;
+namespace App\Models\PhoenixPanel;
 
-use App\Classes\PterodactylClient;
+use App\Classes\PhoenixPanelClient;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Models\Pterodactyl\Nest;
+use App\Models\PhoenixPanel\Nest;
 use App\Models\Product;
 
 class Egg extends Model
@@ -43,7 +43,7 @@ class Egg extends Model
     public static function syncEggs()
     {
         Nest::syncNests();
-        $client = app(PterodactylClient::class);
+        $client = app(PhoenixPanelClient::class);
         Nest::all()->each(function (Nest $nest) use ($client) {
             $eggs = $client->getEggs($nest);
 
@@ -85,7 +85,7 @@ class Egg extends Model
     }
 
     /**
-     * @description remove eggs that have been deleted on pterodactyl
+     * @description remove eggs that have been deleted on phoenixpanel
      *
      * @param  Nest  $nest
      * @param  array  $eggs

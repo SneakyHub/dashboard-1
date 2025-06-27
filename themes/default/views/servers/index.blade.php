@@ -187,7 +187,7 @@
                         </div>
 
                         <div class="card-footer text-center">
-                            <a href="{{ $pterodactyl_url }}/server/{{ $server->identifier }}"
+                            <a href="{{ $phoenixpanel_url }}/server/{{ $server->identifier }}"
                                 target="__blank"
                                 class="btn btn-info text-center float-left ml-2"
                                 data-toggle="tooltip" data-placement="bottom" title="{{ __('Manage Server') }}">

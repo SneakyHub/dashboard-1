@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Models\Pterodactyl;
+namespace App\Models\PhoenixPanel;
 
-use App\Classes\PterodactylClient;
+use App\Classes\PhoenixPanelClient;
 use Exception;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,13 +27,13 @@ class Location extends Model
     }
 
     /**
-     * Sync locations with pterodactyl panel
+     * Sync locations with phoenixpanel panel
      *
      * @throws Exception
      */
     public static function syncLocations()
     {
-        $client = app(PterodactylClient::class);
+        $client = app(PhoenixPanelClient::class);
         $locations = $client->getLocations();
 
         //map response
@@ -62,7 +62,7 @@ class Location extends Model
     }
 
     /**
-     * @description remove locations that have been deleted on pterodactyl
+     * @description remove locations that have been deleted on phoenixpanel
      *
      * @param  array  $locations
      */

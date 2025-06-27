@@ -29,7 +29,7 @@ include './src/forms/database.php';
 include './src/forms/redis.php';
 include './src/forms/dashboard.php';
 include './src/forms/smtp.php';
-include './src/forms/pterodactyl.php';
+include './src/forms/phoenixpanel.php';
 include './src/forms/admin.php';
 
 if (file_exists('../../install.lock')) {
@@ -47,7 +47,7 @@ $stepConfig = [
     5 => ['view' => 'redis-configuration', 'is_revertable' => true],
     6 => ['view' => 'dashboard-configuration', 'is_revertable' => true],
     7 => ['view' => 'email-configuration', 'is_revertable' => true],
-    8 => ['view' => 'pterodactyl-configuration', 'is_revertable' => false],
+    8 => ['view' => 'phoenixpanel-configuration', 'is_revertable' => false],
     9 => ['view' => 'admin-creation', 'is_revertable' => false],
     10 => ['view' => 'installation-complete', 'is_revertable' => false],
 ];

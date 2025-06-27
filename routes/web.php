@@ -125,7 +125,7 @@ Route::middleware(['auth', 'checkSuspended'])->group(function () {
         Route::resource('roles', RoleController::class);
         //overview
         Route::get('overview', [OverViewController::class, 'index'])->name('overview.index');
-        Route::get('overview/sync', [OverViewController::class, 'syncPterodactyl'])->name('overview.sync');
+        Route::get('overview/sync', [OverViewController::class, 'syncPhoenixPanel'])->name('overview.sync');
 
         Route::resource('activitylogs', ActivityLogController::class);
 

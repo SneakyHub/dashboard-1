@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('description')->nullable();
             $table->dateTime('suspended')->nullable();
             $table->string('identifier')->nullable();
-            $table->integer('pterodactyl_id')->nullable();
+            $table->integer('phoenixpanel_id')->nullable();
             $table->foreignId('user_id')->references('id')->on('users');
             $table->foreignId('egg_id')->references('id')->on('eggs');
             $table->foreignId('location_id')->references('id')->on('locations');

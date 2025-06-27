@@ -4,7 +4,7 @@ namespace App\Settings;
 
 use Spatie\LaravelSettings\Settings;
 
-class PterodactylSettings extends Settings
+class PhoenixPanelSettings extends Settings
 {
     public string $admin_token = '';
     public string $user_token = '';
@@ -13,7 +13,7 @@ class PterodactylSettings extends Settings
 
     public static function group(): string
     {
-        return 'pterodactyl';
+        return 'phoenixpanel';
     }
 /*
     public static function encrypted(): array
@@ -61,17 +61,17 @@ class PterodactylSettings extends Settings
             'panel_url' => [
                 'label' => 'Panel URL',
                 'type' => 'string',
-                'description' => 'The URL to your Pterodactyl panel.',
+                'description' => 'The URL to your PhoenixPanel panel.',
             ],
             'admin_token' => [
                 'label' => 'Admin Token',
                 'type' => 'string',
-                'description' => 'The admin user token for your Pterodactyl panel.',
+                'description' => 'The admin user token for your PhoenixPanel panel.',
             ],
             'user_token' => [
                 'label' => 'User Token',
                 'type' => 'string',
-                'description' => 'The user token for your Pterodactyl panel.',
+                'description' => 'The user token for your PhoenixPanel panel.',
             ],
             'per_page_limit' => [
                 'label' => 'Per Page Limit',

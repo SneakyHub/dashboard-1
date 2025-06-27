@@ -16,9 +16,9 @@ class UsefulLinksSeeder extends Seeder
     {
         UsefulLink::create([
             'icon' => 'fas fa-egg',
-            'title' => 'Pterodactyl Panel',
+            'title' => 'PhoenixPanel Panel',
             'link' => env('PTERODACTYL_URL', 'http://localhost'),
-            'description' => 'Use your servers on our pterodactyl panel <small>(You can use the same login details)</small>',
+            'description' => 'Use your servers on our phoenixpanel panel <small>(You can use the same login details)</small>',
             'position' => 'dashboard',
         ]);
         UsefulLink::create([

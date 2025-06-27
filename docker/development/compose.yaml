@@ -1,5 +1,5 @@
 services:
-  # TODO: add wings and pterodactyl
+  # TODO: add wings and phoenixpanel
   ctrlpanel_development:
     build:
       context: ../../

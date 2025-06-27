@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Classes\PterodactylClient;
-use App\Settings\PterodactylSettings;
+use App\Classes\PhoenixPanelClient;
+use App\Settings\PhoenixPanelSettings;
 use App\Settings\GeneralSettings;
 use App\Http\Controllers\Controller;
-use App\Models\Pterodactyl\Egg;
-use App\Models\Pterodactyl\Location;
-use App\Models\Pterodactyl\Nest;
-use App\Models\Pterodactyl\Node;
+use App\Models\PhoenixPanel\Egg;
+use App\Models\PhoenixPanel\Location;
+use App\Models\PhoenixPanel\Nest;
+use App\Models\PhoenixPanel\Node;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Server;
@@ -23,11 +23,11 @@ class OverViewController extends Controller
     const SYNC_PERMISSION = "admin.overview.sync";
     public const TTL = 86400;
 
-    private $pterodactyl;
+    private $phoenixpanel;
 
-    public function __construct(PterodactylSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $ptero_settings)
     {
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
     }
 
     public function index(GeneralSettings $general_settings)
@@ -149,7 +149,7 @@ class OverViewController extends Controller
 
         //Get node information and prepare collection
         $pteroNodeIds = [];
-        foreach ($this->pterodactyl->getNodes() as $pteroNode) {
+        foreach ($this->phoenixpanel->getNodes() as $pteroNode) {
             array_push($pteroNodeIds, $pteroNode['attributes']['id']);
         }
         $nodes = collect();
@@ -157,10 +157,10 @@ class OverViewController extends Controller
             $nodeId = $DBnode['id'];
             if (! in_array($nodeId, $pteroNodeIds)) {
                 continue;
-            } //Check if node exists on pterodactyl too, if not, skip
+            } //Check if node exists on phoenixpanel too, if not, skip
             $nodes->put($nodeId, collect());
             $nodes[$nodeId]->name = $DBnode['name'];
-            $pteroNode = $this->pterodactyl->getNode($nodeId);
+            $pteroNode = $this->phoenixpanel->getNode($nodeId);
             $nodes[$nodeId]->usagePercent = round(max($pteroNode['allocated_resources']['memory'] / ($pteroNode['memory'] * ($pteroNode['memory_overallocate'] + 100) / 100), $pteroNode['allocated_resources']['disk'] / ($pteroNode['disk'] * ($pteroNode['disk_overallocate'] + 100) / 100)) * 100, 2);
             $counters['totalUsagePercent'] += $nodes[$nodeId]->usagePercent;
 
@@ -171,10 +171,10 @@ class OverViewController extends Controller
         }
         $counters['totalUsagePercent'] = ($DBnodes->count()) ? round($counters['totalUsagePercent'] / $DBnodes->count(), 2) : 0;
 
-        foreach ($this->pterodactyl->getServers() as $server) { //gets all servers from Pterodactyl and calculates total of credit usage for each node separately + total
+        foreach ($this->phoenixpanel->getServers() as $server) { //gets all servers from PhoenixPanel and calculates total of credit usage for each node separately + total
             $nodeId = $server['attributes']['node'];
 
-            if ($CPServer = Server::query()->where('pterodactyl_id', $server['attributes']['id'])->first()) {
+            if ($CPServer = Server::query()->where('phoenixpanel_id', $server['attributes']['id'])->first()) {
                 $product = Product::query()->where('id', $CPServer->product_id)->first();
                 $price = $product->getMonthlyPrice();
                 if (! $CPServer->suspended) {
@@ -228,15 +228,15 @@ class OverViewController extends Controller
     }
 
     /**
-     * @description Sync locations,nodes,nests,eggs with the linked pterodactyl panel
+     * @description Sync locations,nodes,nests,eggs with the linked phoenixpanel panel
      */
-    public function syncPterodactyl()
+    public function syncPhoenixPanel()
     {
         $this->checkPermission(self::SYNC_PERMISSION);
 
         Node::syncNodes();
         Egg::syncEggs();
 
-        return redirect()->back()->with('success', __('Pterodactyl synced'));
+        return redirect()->back()->with('success', __('PhoenixPanel synced'));
     }
 }

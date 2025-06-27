@@ -30,7 +30,7 @@ class TestVouchersController extends TestCase
 
         $response = $this->actingAs(User::factory()->create([
             'role' => 'admin',
-            'pterodactyl_id' => '1',
+            'phoenixpanel_id' => '1',
         ]))->{$method}($route);
 
         $response->assertStatus($expectedStatus);
@@ -64,7 +64,7 @@ class TestVouchersController extends TestCase
     {
         return User::factory()->create([
             'role' => 'admin',
-            'pterodactyl_id' => '1',
+            'phoenixpanel_id' => '1',
         ]);
     }
 

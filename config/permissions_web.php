@@ -40,7 +40,7 @@ return [
     'Edit User Password' => 'admin.users.write.password',
     'Edit User Role' => 'admin.users.write.role',
     'Edit User Referral' => 'admin.users.write.referral',
-    'Edit User Pterodactyl' => 'admin.users.write.pterodactyl',
+    'Edit User PhoenixPanel' => 'admin.users.write.phoenixpanel',
     'Edit User Serverlimit' => 'admin.users.write.serverlimit',
 
     "Manage Icons" => "admin.icons.edit",
@@ -104,8 +104,8 @@ return [
     'View Mail Settings' => 'settings.mail.read',
     'Manage Mail Settings' => 'settings.mail.write',
 
-    'View Pterodactyl Settings' => 'settings.pterodactyl.read',
-    'Manage Pterodactyl Settings' => 'settings.pterodactyl.write',
+    'View PhoenixPanel Settings' => 'settings.phoenixpanel.read',
+    'Manage PhoenixPanel Settings' => 'settings.phoenixpanel.write',
 
     'View Referral Settings' => 'settings.referral.read',
     'Manage Referral Settings' => 'settings.referral.write',

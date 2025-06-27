@@ -42,8 +42,8 @@ class PermissionGroups
         'settings.locale.write',
         'settings.mail.read',
         'settings.mail.write',
-        'settings.pterodactyl.read',
-        'settings.pterodactyl.write',
+        'settings.phoenixpanel.read',
+        'settings.phoenixpanel.write',
         'settings.referral.read',
         'settings.referral.write',
         'settings.server.read',
@@ -78,7 +78,7 @@ class PermissionGroups
         'admin.users.write.password',
         'admin.users.write.role',
         'admin.users.write.referral',
-        'admin.users.write.pterodactyl'
+        'admin.users.write.phoenixpanel'
     ];
 
     const SERVERS_PERMISSIONS = [

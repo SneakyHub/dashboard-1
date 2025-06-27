@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Classes\Pterodactyl;
-use App\Classes\PterodactylClient;
+use App\Classes\PhoenixPanel;
+use App\Classes\PhoenixPanelClient;
 use App\Events\UserUpdateCreditsEvent;
 use App\Http\Controllers\Controller;
 use App\Models\DiscordUser;
 use App\Models\User;
 use App\Notifications\ReferralNotification;
-use App\Settings\PterodactylSettings;
+use App\Settings\PhoenixPanelSettings;
 use App\Settings\UserSettings;
 use Carbon\Carbon;
 use Illuminate\Contracts\Foundation\Application;
@@ -29,15 +29,15 @@ use Spatie\QueryBuilder\QueryBuilder;
 
 class UserController extends Controller
 {
-    private $pterodactyl;
+    private $phoenixpanel;
 
-    public function __construct(PterodactylSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $ptero_settings)
     {
-        $this->pterodactyl = new PterodactylClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
     }
     const ALLOWED_INCLUDES = ['servers', 'notifications', 'payments', 'vouchers', 'roles', 'discordUser'];
 
-    const ALLOWED_FILTERS = ['name', 'server_limit', 'email', 'pterodactyl_id', 'suspended'];
+    const ALLOWED_FILTERS = ['name', 'server_limit', 'email', 'phoenixpanel_id', 'suspended'];
 
     /**
      * Display a listing of the resource.
@@ -99,9 +99,9 @@ class UserController extends Controller
 
         event(new UserUpdateCreditsEvent($user));
 
-        //Update Users Password on Pterodactyl
+        //Update Users Password on PhoenixPanel
         //Username,Mail,First and Lastname are required aswell
-        $response = $this->pterodactyl->application->patch('/application/users/'.$user->pterodactyl_id, [
+        $response = $this->phoenixpanel->application->patch('/application/users/'.$user->phoenixpanel_id, [
             'username' => $request->name,
             'first_name' => $request->name,
             'last_name' => $request->name,
@@ -110,8 +110,8 @@ class UserController extends Controller
 
         if ($response->failed()) {
             throw ValidationException::withMessages([
-                'pterodactyl_error_message' => $response->toException()->getMessage(),
-                'pterodactyl_error_status' => $response->toException()->getCode(),
+                'phoenixpanel_error_message' => $response->toException()->getMessage(),
+                'phoenixpanel_error_status' => $response->toException()->getCode(),
             ]);
         }
         if($request->has("role")){
@@ -295,7 +295,7 @@ class UserController extends Controller
             'referral_code' => $this->createReferralCode(),
         ]);
 
-        $response = $this->pterodactyl->application->post('/application/users', [
+        $response = $this->phoenixpanel->application->post('/application/users', [
             'external_id' => App::environment('local') ? Str::random(16) : (string) $user->id,
             'username' => $user->name,
             'email' => $user->email,
@@ -309,13 +309,13 @@ class UserController extends Controller
         if ($response->failed()) {
             $user->delete();
             throw ValidationException::withMessages([
-                'pterodactyl_error_message' => $response->toException()->getMessage(),
-                'pterodactyl_error_status' => $response->toException()->getCode(),
+                'phoenixpanel_error_message' => $response->toException()->getMessage(),
+                'phoenixpanel_error_status' => $response->toException()->getCode(),
             ]);
         }
 
         $user->update([
-            'pterodactyl_id' => $response->json()['attributes']['id'],
+            'phoenixpanel_id' => $response->json()['attributes']['id'],
         ]);
         //INCREMENT REFERRAL-USER CREDITS
         if (! empty($request->input('referral_code'))) {
