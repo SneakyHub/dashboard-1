@@ -28,14 +28,14 @@ class PhoenixPanelClient
 
     public PendingRequest $application;
 
-    public function __construct(PhoenixPanelSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $phoenix_settings)
     {
         $server_settings = new ServerSettings();
 
         try {
-            $this->client = $this->client($ptero_settings);
-            $this->application = $this->clientAdmin($ptero_settings);
-            $this->per_page_limit = $ptero_settings->per_page_limit;
+            $this->client = $this->client($phoenix_settings);
+            $this->application = $this->clientAdmin($phoenix_settings);
+            $this->per_page_limit = $phoenix_settings->per_page_limit;
             $this->allocation_limit = $server_settings->allocation_limit;
         } catch (Exception $exception) {
             logger('Failed to construct PhoenixPanel client, Settings table not available?', ['exception' => $exception]);
@@ -44,22 +44,22 @@ class PhoenixPanelClient
     /**
      * @return PendingRequest
      */
-    public function client(PhoenixPanelSettings $ptero_settings)
+    public function client(PhoenixPanelSettings $phoenix_settings)
     {
         return Http::withHeaders([
-            'Authorization' => 'Bearer ' . $ptero_settings->user_token,
+            'Authorization' => 'Bearer ' . $phoenix_settings->user_token,
             'Content-type' => 'application/json',
             'Accept' => 'Application/vnd.phoenixpanel.v1+json',
-        ])->baseUrl($ptero_settings->getUrl() . 'api' . '/');
+        ])->baseUrl($phoenix_settings->getUrl() . 'api' . '/');
     }
 
-    public function clientAdmin(PhoenixPanelSettings $ptero_settings)
+    public function clientAdmin(PhoenixPanelSettings $phoenix_settings)
     {
         return Http::withHeaders([
-            'Authorization' => 'Bearer ' . $ptero_settings->admin_token,
+            'Authorization' => 'Bearer ' . $phoenix_settings->admin_token,
             'Content-type' => 'application/json',
             'Accept' => 'Application/vnd.phoenixpanel.v1+json',
-        ])->baseUrl($ptero_settings->getUrl() . 'api' . '/');
+        ])->baseUrl($phoenix_settings->getUrl() . 'api' . '/');
     }
 
     /**

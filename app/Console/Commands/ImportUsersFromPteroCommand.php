@@ -6,7 +6,7 @@ use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
-class ImportUsersFromPteroCommand extends Command
+class ImportUsersFromPhoenixCommand extends Command
 {
     /**
      * @var string

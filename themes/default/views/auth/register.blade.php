@@ -34,8 +34,8 @@
                                     <small><strong>{{ $message }}</strong></small>
                                 </span>
             @enderror
-            @if ($errors->has('ptero_registration_error'))
-              @foreach ($errors->get('ptero_registration_error') as $err)
+            @if ($errors->has('phoenix_registration_error'))
+              @foreach ($errors->get('phoenix_registration_error') as $err)
                 <span class="text-danger" role="alert">
                                         <small><strong>{{ $err }}</strong></small>
                                     </span>

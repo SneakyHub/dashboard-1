@@ -21,7 +21,7 @@ class MakeUserCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'make:user {--ptero_id=} {--password=}';
+    protected $signature = 'make:user {--phoenix_id=} {--password=}';
 
     /**
      * The console command description.
@@ -46,18 +46,18 @@ class MakeUserCommand extends Command
      *
      * @return int
      */
-    public function handle(PhoenixPanelSettings $ptero_settings)
+    public function handle(PhoenixPanelSettings $phoenix_settings)
     {
-        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
-        $ptero_id = $this->option('ptero_id') ?? $this->ask('Please specify your PhoenixPanel ID.');
+        $this->phoenixpanel = new PhoenixPanelClient($phoenix_settings);
+        $phoenix_id = $this->option('phoenix_id') ?? $this->ask('Please specify your PhoenixPanel ID.');
         $password = $this->secret('password') ?? $this->ask('Please specify your password.');
 
         // Validate user input
         $validator = Validator::make([
-            'ptero_id' => $ptero_id,
+            'phoenix_id' => $phoenix_id,
             'password' => $password,
         ], [
-            'ptero_id' => 'required|numeric|integer|min:1|max:2147483647',
+            'phoenix_id' => 'required|numeric|integer|min:1|max:2147483647',
             'password' => 'required|string|min:8|max:60',
         ]);
 
@@ -68,7 +68,7 @@ class MakeUserCommand extends Command
         }
 
         //TODO: Do something with response (check for status code and give hints based upon that)
-        $response = $this->phoenixpanel->getUser($ptero_id);
+        $response = $this->phoenixpanel->getUser($phoenix_id);
 
         if (isset($response['errors'])) {
             if (isset($response['errors'][0]['code'])) {
@@ -95,7 +95,7 @@ class MakeUserCommand extends Command
             ['ID', $user->id],
             ['Email', $user->email],
             ['Username', $user->name],
-            ['Ptero-ID', $user->phoenixpanel_id],
+            ['Phoenix-ID', $user->phoenixpanel_id],
             ['Referral code', $user->referral_code],
         ]);
 

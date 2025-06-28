@@ -34,7 +34,7 @@ class TicketsController extends Controller
         ]);
     }
 
-    public function show($ticket_id, PhoenixPanelSettings $ptero_settings)
+    public function show($ticket_id, PhoenixPanelSettings $phoenix_settings)
     {
         $this->checkAnyPermission([self::READ_PERMISSION, self::WRITE_PERMISSION]);
         try {
@@ -46,7 +46,7 @@ class TicketsController extends Controller
         $ticketcomments = $ticket->ticketcomments;
         $ticketcategory = $ticket->ticketcategory;
         $server = Server::where('id', $ticket->server)->first();
-        $phoenixpanel_url = $ptero_settings->panel_url;
+        $phoenixpanel_url = $phoenix_settings->panel_url;
 
         return view('admin.ticket.show', compact('ticket', 'ticketcategory', 'ticketcomments', 'server', 'phoenixpanel_url'));
     }

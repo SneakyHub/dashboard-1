@@ -25,9 +25,9 @@ class OverViewController extends Controller
 
     private $phoenixpanel;
 
-    public function __construct(PhoenixPanelSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $phoenix_settings)
     {
-        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($phoenix_settings);
     }
 
     public function index(GeneralSettings $general_settings)
@@ -148,20 +148,20 @@ class OverViewController extends Controller
         $syncLastUpdate = $lastEgg ? $lastEgg->updated_at->isoFormat('LLL') : __('unknown');
 
         //Get node information and prepare collection
-        $pteroNodeIds = [];
-        foreach ($this->phoenixpanel->getNodes() as $pteroNode) {
-            array_push($pteroNodeIds, $pteroNode['attributes']['id']);
+        $phoenixNodeIds = [];
+        foreach ($this->phoenixpanel->getNodes() as $phoenixNode) {
+            array_push($phoenixNodeIds, $phoenixNode['attributes']['id']);
         }
         $nodes = collect();
         foreach ($DBnodes = Node::query()->get() as $DBnode) { //gets all node information and prepares the structure
             $nodeId = $DBnode['id'];
-            if (! in_array($nodeId, $pteroNodeIds)) {
+            if (! in_array($nodeId, $phoenixNodeIds)) {
                 continue;
             } //Check if node exists on phoenixpanel too, if not, skip
             $nodes->put($nodeId, collect());
             $nodes[$nodeId]->name = $DBnode['name'];
-            $pteroNode = $this->phoenixpanel->getNode($nodeId);
-            $nodes[$nodeId]->usagePercent = round(max($pteroNode['allocated_resources']['memory'] / ($pteroNode['memory'] * ($pteroNode['memory_overallocate'] + 100) / 100), $pteroNode['allocated_resources']['disk'] / ($pteroNode['disk'] * ($pteroNode['disk_overallocate'] + 100) / 100)) * 100, 2);
+            $phoenixNode = $this->phoenixpanel->getNode($nodeId);
+            $nodes[$nodeId]->usagePercent = round(max($phoenixNode['allocated_resources']['memory'] / ($phoenixNode['memory'] * ($phoenixNode['memory_overallocate'] + 100) / 100), $phoenixNode['allocated_resources']['disk'] / ($phoenixNode['disk'] * ($phoenixNode['disk_overallocate'] + 100) / 100)) * 100, 2);
             $counters['totalUsagePercent'] += $nodes[$nodeId]->usagePercent;
 
             $nodes[$nodeId]->totalServers = 0;
@@ -220,7 +220,7 @@ class OverViewController extends Controller
             'counters' => $counters,
             'nodes' => $nodes,
             'syncLastUpdate' => $syncLastUpdate,
-            'deletedNodesPresent' => ($DBnodes->count() != count($pteroNodeIds)) ? true : false,
+            'deletedNodesPresent' => ($DBnodes->count() != count($phoenixNodeIds)) ? true : false,
             'perPageLimit' => ($counters['servers']->total != Server::query()->count()) ? true : false,
             'tickets' => $tickets,
             'credits_display_name' => $general_settings->credits_display_name

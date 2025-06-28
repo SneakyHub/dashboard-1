@@ -42,21 +42,21 @@ class ServerController extends Controller
     ];
 
     private PhoenixPanelClient $phoenixpanel;
-    private PhoenixPanelSettings $pteroSettings;
+    private PhoenixPanelSettings $phoenixSettings;
     private GeneralSettings $generalSettings;
     private ServerSettings $serverSettings;
     private UserSettings $userSettings;
     private DiscordSettings $discordSettings;
 
     public function __construct(
-        PhoenixPanelSettings $pteroSettings,
+        PhoenixPanelSettings $phoenixSettings,
         GeneralSettings $generalSettings,
         ServerSettings $serverSettings,
         UserSettings $userSettings,
         DiscordSettings $discordSettings
     ) {
-        $this->pteroSettings = $pteroSettings;
-        $this->phoenixpanel = new PhoenixPanelClient($pteroSettings);
+        $this->phoenixSettings = $phoenixSettings;
+        $this->phoenixpanel = new PhoenixPanelClient($phoenixSettings);
         $this->generalSettings = $generalSettings;
         $this->serverSettings = $serverSettings;
         $this->userSettings = $userSettings;
@@ -70,7 +70,7 @@ class ServerController extends Controller
         return view('servers.index')->with([
             'servers' => $servers,
             'credits_display_name' => $this->generalSettings->credits_display_name,
-            'phoenixpanel_url' => $this->pteroSettings->panel_url,
+            'phoenixpanel_url' => $this->phoenixSettings->panel_url,
             'phpmyadmin_url' => $this->generalSettings->phpmyadmin_url
         ]);
     }
@@ -399,7 +399,7 @@ class ServerController extends Controller
     {
         $currentProduct = Product::find($server->product_id);
         $nodeId = $serverInfo['relationships']['node']['attributes']['id'];
-        $pteroNode = $this->phoenixpanel->getNode($nodeId);
+        $phoenixNode = $this->phoenixpanel->getNode($nodeId);
         $currentEgg = $serverInfo['egg'];
 
         //$currentProductEggs = $currentProduct->eggs->pluck('id')->toArray();
@@ -413,17 +413,17 @@ class ServerController extends Controller
                 $builder->where('id', $currentEgg);
             })
             ->get()
-            ->map(function ($product) use ($currentProduct, $pteroNode) {
+            ->map(function ($product) use ($currentProduct, $phoenixNode) {
                 $product->eggs = $product->eggs->pluck('name')->toArray();
 
                 $memoryDiff = $product->memory - $currentProduct->memory;
                 $diskDiff = $product->disk - $currentProduct->disk;
 
-                $maxMemory = ($pteroNode['memory'] * ($pteroNode['memory_overallocate'] + 100) / 100);
-                $maxDisk = ($pteroNode['disk'] * ($pteroNode['disk_overallocate'] + 100) / 100);
+                $maxMemory = ($phoenixNode['memory'] * ($phoenixNode['memory_overallocate'] + 100) / 100);
+                $maxDisk = ($phoenixNode['disk'] * ($phoenixNode['disk_overallocate'] + 100) / 100);
 
-                if ($memoryDiff > $maxMemory - $pteroNode['allocated_resources']['memory'] ||
-                    $diskDiff > $maxDisk - $pteroNode['allocated_resources']['disk']) {
+                if ($memoryDiff > $maxMemory - $phoenixNode['allocated_resources']['memory'] ||
+                    $diskDiff > $maxDisk - $phoenixNode['allocated_resources']['disk']) {
                     $product->doesNotFit = true;
                 }
 

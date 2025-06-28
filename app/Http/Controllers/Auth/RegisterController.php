@@ -68,10 +68,10 @@ class RegisterController extends Controller
      *
      * @return void
      */
-    public function __construct(PhoenixPanelSettings $ptero_settings, GeneralSettings $general_settings, WebsiteSettings $website_settings, UserSettings $user_settings, ReferralSettings $referral_settings)
+    public function __construct(PhoenixPanelSettings $phoenix_settings, GeneralSettings $general_settings, WebsiteSettings $website_settings, UserSettings $user_settings, ReferralSettings $referral_settings)
     {
         $this->middleware('guest');
-        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($phoenix_settings);
         $this->credits_display_name = $general_settings->credits_display_name;
         $this->recaptcha_version = $general_settings->recaptcha_version;
         $this->website_show_tos = $website_settings->show_tos;
@@ -162,7 +162,7 @@ class RegisterController extends Controller
             $user->delete();
             Log::error('PhoenixPanel Registration Error: ' . ($response->json()['errors'][0]['detail'] ?? 'Unknown error'));
             throw ValidationException::withMessages([
-                'ptero_registration_error' => [__('Failed to create account on PhoenixPanel. Please contact Support!')],
+                'phoenix_registration_error' => [__('Failed to create account on PhoenixPanel. Please contact Support!')],
             ]);
         }
 
@@ -170,7 +170,7 @@ class RegisterController extends Controller
             $user->delete();
             Log::error('PhoenixPanel Registration Error: Missing user ID in response');
             throw ValidationException::withMessages([
-                'ptero_registration_error' => [__('Failed to create account on PhoenixPanel. Please contact Support!')],
+                'phoenix_registration_error' => [__('Failed to create account on PhoenixPanel. Please contact Support!')],
             ]);
         }
 

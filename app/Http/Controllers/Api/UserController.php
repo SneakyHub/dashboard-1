@@ -31,9 +31,9 @@ class UserController extends Controller
 {
     private $phoenixpanel;
 
-    public function __construct(PhoenixPanelSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $phoenix_settings)
     {
-        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($phoenix_settings);
     }
     const ALLOWED_INCLUDES = ['servers', 'notifications', 'payments', 'vouchers', 'roles', 'discordUser'];
 

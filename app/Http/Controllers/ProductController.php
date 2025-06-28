@@ -23,9 +23,9 @@ class ProductController extends Controller
 {
     private $phoenixpanel;
 
-    public function __construct(PhoenixPanelSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $phoenix_settings)
     {
-        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($phoenix_settings);
     }
 
     /**
@@ -74,8 +74,8 @@ class ProductController extends Controller
     {
         $nodes = $this->getNodesBasedOnEgg($request, $egg);
         foreach ($nodes as $key => $node) {
-            $pteroNode = $this->phoenixpanel->getNode($node->id);
-            if ($pteroNode['allocated_resources']['memory'] >= ($pteroNode['memory'] * ($pteroNode['memory_overallocate'] + 100) / 100) || $pteroNode['allocated_resources']['disk'] >= ($pteroNode['disk'] * ($pteroNode['disk_overallocate'] + 100) / 100)) {
+            $phoenixNode = $this->phoenixpanel->getNode($node->id);
+            if ($phoenixNode['allocated_resources']['memory'] >= ($phoenixNode['memory'] * ($phoenixNode['memory_overallocate'] + 100) / 100) || $phoenixNode['allocated_resources']['disk'] >= ($phoenixNode['disk'] * ($phoenixNode['disk_overallocate'] + 100) / 100)) {
                 $nodes->forget($key);
             }
         }
@@ -150,10 +150,10 @@ class ProductController extends Controller
             $product->doesNotFit = true;
 
             foreach ($product->nodes as $node) {
-                $pteroNode = $this->phoenixpanel->getNode($node->id);
+                $phoenixNode = $this->phoenixpanel->getNode($node->id);
 
-                $availableMemory = ($pteroNode['memory'] * ($pteroNode['memory_overallocate'] + 100) / 100) - $pteroNode['allocated_resources']['memory'];
-                $availableDisk = ($pteroNode['disk'] * ($pteroNode['disk_overallocate'] + 100) / 100) - $pteroNode['allocated_resources']['disk'];
+                $availableMemory = ($phoenixNode['memory'] * ($phoenixNode['memory_overallocate'] + 100) / 100) - $phoenixNode['allocated_resources']['memory'];
+                $availableDisk = ($phoenixNode['disk'] * ($phoenixNode['disk_overallocate'] + 100) / 100) - $phoenixNode['allocated_resources']['disk'];
 
                 // If the product fits in this node, mark it as fitting and break out of the loop
                 if ($product->memory <= $availableMemory && $product->disk <= $availableDisk) {

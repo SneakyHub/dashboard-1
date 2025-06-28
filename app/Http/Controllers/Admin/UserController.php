@@ -39,7 +39,7 @@ class UserController extends Controller
     const CHANGE_PASSWORD_PERMISSION = "admin.users.write.password";
     const CHANGE_ROLE_PERMISSION ="admin.users.write.role";
     const CHANGE_REFERRAL_PERMISSION ="admin.users.write.referral";
-    const CHANGE_PTERO_PERMISSION = "admin.users.write.phoenixpanel";
+    const CHANGE_PHOENIX_PERMISSION = "admin.users.write.phoenixpanel";
 
     const CHANGE_SERVERLIMIT_PERMISSION = "admin.users.write.serverlimit";
     const DELETE_PERMISSION = "admin.users.delete";
@@ -49,9 +49,9 @@ class UserController extends Controller
 
     private $phoenixpanel;
 
-    public function __construct(PhoenixPanelSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $phoenix_settings)
     {
-        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($phoenix_settings);
     }
 
     /**
@@ -187,7 +187,7 @@ class UserController extends Controller
             $dataArray['credits'] = $request->input('credits');
         }
 
-        if ($this->canAny([self::CHANGE_PTERO_PERMISSION, self::WRITE_PERMISSION]) && $request->filled('phoenixpanel_id')) {
+        if ($this->canAny([self::CHANGE_PHOENIX_PERMISSION, self::WRITE_PERMISSION]) && $request->filled('phoenixpanel_id')) {
             $dataArray['phoenixpanel_id'] = $request->input('phoenixpanel_id');
         }
 
@@ -451,8 +451,8 @@ class UserController extends Controller
             ->editColumn('last_seen', function (User $user) {
                 return $user->last_seen ? $user->last_seen->diffForHumans() : __('Never');
             })
-            ->editColumn('name', function (User $user, PhoenixPanelSettings $ptero_settings) {
-                return '<a class="text-info" target="_blank" href="' . $ptero_settings->panel_url . '/admin/users/view/' . $user->phoenixpanel_id . '">' . strip_tags($user->name) . '</a>';
+            ->editColumn('name', function (User $user, PhoenixPanelSettings $phoenix_settings) {
+                return '<a class="text-info" target="_blank" href="' . $phoenix_settings->panel_url . '/admin/users/view/' . $user->phoenixpanel_id . '">' . strip_tags($user->name) . '</a>';
             })
             ->orderColumn('role', 'role_name $1')
             ->rawColumns(['avatar', 'name', 'credits', 'role', 'usage',  'actions'])

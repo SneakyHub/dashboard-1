@@ -9,10 +9,10 @@ class CreatePhoenixPanelSettings extends LegacySettingsMigration
     {
         $table_exists = DB::table('settings_old')->exists();
 
-        $this->migrator->add('phoenixpanel.admin_token', $table_exists ? $this->getOldValue('SETTINGS::SYSTEM:PTERODACTYL:TOKEN', '') : env('PTERODACTYL_TOKEN', ''));
-        $this->migrator->add('phoenixpanel.user_token', $table_exists ? $this->getOldValue('SETTINGS::SYSTEM:PTERODACTYL:ADMIN_USER_TOKEN', '') : '');
-        $this->migrator->add('phoenixpanel.panel_url', $table_exists ? $this->getOldValue('SETTINGS::SYSTEM:PTERODACTYL:URL', '') : env('PTERODACTYL_URL', ''));
-        $this->migrator->add('phoenixpanel.per_page_limit', $table_exists ? $this->getOldValue('SETTINGS::SYSTEM:PTERODACTYL:PER_PAGE_LIMIT', 200) : 200);
+        $this->migrator->add('phoenixpanel.admin_token', $table_exists ? $this->getOldValue('SETTINGS::SYSTEM:PHOENIXPANEL:TOKEN', '') : env('PHOENIXPANEL_TOKEN', ''));
+        $this->migrator->add('phoenixpanel.user_token', $table_exists ? $this->getOldValue('SETTINGS::SYSTEM:PHOENIXPANEL:ADMIN_USER_TOKEN', '') : '');
+        $this->migrator->add('phoenixpanel.panel_url', $table_exists ? $this->getOldValue('SETTINGS::SYSTEM:PHOENIXPANEL:URL', '') : env('PHOENIXPANEL_URL', ''));
+        $this->migrator->add('phoenixpanel.per_page_limit', $table_exists ? $this->getOldValue('SETTINGS::SYSTEM:PHOENIXPANEL:PER_PAGE_LIMIT', 200) : 200);
     }
 
     public function down(): void
@@ -21,25 +21,25 @@ class CreatePhoenixPanelSettings extends LegacySettingsMigration
 
         DB::table('settings_old')->insert([
             [
-                'key' => 'SETTINGS::SYSTEM:PTERODACTYL:TOKEN',
+                'key' => 'SETTINGS::SYSTEM:PHOENIXPANEL:TOKEN',
                 'value' => $this->getNewValue('admin_token', 'phoenixpanel'),
                 'type' => 'string',
                 'description' => 'The admin token for the PhoenixPanel panel.',
             ],
             [
-                'key' => 'SETTINGS::SYSTEM:PTERODACTYL:ADMIN_USER_TOKEN',
+                'key' => 'SETTINGS::SYSTEM:PHOENIXPANEL:ADMIN_USER_TOKEN',
                 'value' => $this->getNewValue('user_token', 'phoenixpanel'),
                 'type' => 'string',
                 'description' => 'The user token for the PhoenixPanel panel.',
             ],
             [
-                'key' => 'SETTINGS::SYSTEM:PTERODACTYL:URL',
+                'key' => 'SETTINGS::SYSTEM:PHOENIXPANEL:URL',
                 'value' => $this->getNewValue('panel_url', 'phoenixpanel'),
                 'type' => 'string',
                 'description' => 'The URL for the PhoenixPanel panel.',
             ],
             [
-                'key' => 'SETTINGS::SYSTEM:PTERODACTYL:PER_PAGE_LIMIT',
+                'key' => 'SETTINGS::SYSTEM:PHOENIXPANEL:PER_PAGE_LIMIT',
                 'value' => $this->getNewValue('per_page_limit', 'phoenixpanel'),
                 'type' => 'integer',
                 'description' => 'The number of servers to show per page.',

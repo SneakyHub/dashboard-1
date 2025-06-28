@@ -30,9 +30,9 @@ class ServerController extends Controller
     const DELETE_PERMISSION = "admin.servers.delete";
     private $phoenixpanel;
 
-    public function __construct(PhoenixPanelSettings $ptero_settings)
+    public function __construct(PhoenixPanelSettings $phoenix_settings)
     {
-        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
+        $this->phoenixpanel = new PhoenixPanelClient($phoenix_settings);
     }
 
     /**
@@ -213,7 +213,7 @@ class ServerController extends Controller
             }
         }
 
-        foreach ($this->phoenixpanel->getServers() as $server) { //go thru all ptero servers, if server exists, change value to true in array.
+        foreach ($this->phoenixpanel->getServers() as $server) { //go thru all phoenix servers, if server exists, change value to true in array.
             if (isset($CPIDArray[$server['attributes']['id']])) {
                 $CPIDArray[$server['attributes']['id']] = true;
 
@@ -230,9 +230,9 @@ class ServerController extends Controller
         }
         $filteredArray = array_filter($CPIDArray, function ($v, $k) {
             return $v == false;
-        }, ARRAY_FILTER_USE_BOTH); //Array of servers, that dont exist on ptero (value == false)
+        }, ARRAY_FILTER_USE_BOTH); //Array of servers, that dont exist on phoenix (value == false)
         $deleteCount = 0;
-        foreach ($filteredArray as $key => $CPID) { //delete servers that dont exist on ptero anymore
+        foreach ($filteredArray as $key => $CPID) { //delete servers that dont exist on phoenix anymore
             if (!$this->phoenixpanel->getServerAttributes($key, true)) {
                 $deleteCount++;
             }
@@ -300,8 +300,8 @@ class ServerController extends Controller
             ->editColumn('suspended', function (Server $server) {
                 return $server->suspended ? $server->suspended->diffForHumans() : '';
             })
-            ->editColumn('name', function (Server $server, PhoenixPanelSettings $ptero_settings) {
-                return '<a class="text-info" target="_blank" href="' . $ptero_settings->panel_url . '/admin/servers/view/' . $server->phoenixpanel_id . '">' . strip_tags($server->name) . '</a>';
+            ->editColumn('name', function (Server $server, PhoenixPanelSettings $phoenix_settings) {
+                return '<a class="text-info" target="_blank" href="' . $phoenix_settings->panel_url . '/admin/servers/view/' . $server->phoenixpanel_id . '">' . strip_tags($server->name) . '</a>';
             })
             ->rawColumns(['user', 'actions', 'status', 'name'])
             ->make();

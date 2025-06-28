@@ -1,5 +1,5 @@
 <?php
-if (isset($_POST['checkPtero'])) {
+if (isset($_POST['checkPhoenix'])) {
     wh_log('Checking PhoenixPanel Settings', 'debug');
 
     $url = $_POST['url'];
@@ -20,10 +20,10 @@ if (isset($_POST['checkPtero'])) {
 
     $url = $parsedUrl['scheme'] . '://' . $parsedUrl['host'];
 
-    $callpteroURL = $url . '/api/client/account';
+    $callphoenixURL = $url . '/api/client/account';
     $call = curl_init();
 
-    curl_setopt($call, CURLOPT_URL, $callpteroURL);
+    curl_setopt($call, CURLOPT_URL, $callphoenixURL);
     curl_setopt($call, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($call, CURLOPT_HTTPHEADER, [
         'Accept: Application/vnd.phoenixpanel.v1+json',
@@ -34,10 +34,10 @@ if (isset($_POST['checkPtero'])) {
     $callresult = json_decode($callresponse, true);
     curl_close($call);
 
-    $pteroURL = $url . '/api/application/users';
+    $phoenixURL = $url . '/api/application/users';
     $ch = curl_init();
 
-    curl_setopt($ch, CURLOPT_URL, $pteroURL);
+    curl_setopt($ch, CURLOPT_URL, $phoenixURL);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
         'Accept: Application/vnd.phoenixpanel.v1+json',

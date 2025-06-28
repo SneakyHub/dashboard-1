@@ -98,8 +98,8 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         parent::__construct();
 
-        $ptero_settings = new PhoenixPanelSettings();
-        $this->phoenixpanel = new PhoenixPanelClient($ptero_settings);
+        $phoenix_settings = new PhoenixPanelSettings();
+        $this->phoenixpanel = new PhoenixPanelClient($phoenix_settings);
     }
 
     public static function boot()

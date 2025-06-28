@@ -13,7 +13,7 @@ class TestUserCommand extends TestCase
     /**
      * A basic feature test example.
      *
-     * @dataProvider invalidPteroIdDataProvider
+     * @dataProvider invalidPhoenixIdDataProvider
      *
      * @param  array  $apiResponse
      * @param  int  $expectedExitCode
@@ -32,7 +32,7 @@ class TestUserCommand extends TestCase
             ->assertExitCode($expectedExitCode);
     }
 
-    public function invalidPteroIdDataProvider(): array
+    public function invalidPhoenixIdDataProvider(): array
     {
         return [
             'Good Response' => [

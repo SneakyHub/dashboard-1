@@ -98,7 +98,7 @@ class TicketsController extends Controller
         return redirect()->route('ticket.index')->with('success', __('A ticket has been opened, ID: #') . $ticket->ticket_id);
     }
 
-    public function show($ticket_id, PhoenixPanelSettings $ptero_settings)
+    public function show($ticket_id, PhoenixPanelSettings $phoenix_settings)
     {
         $this->checkPermission(self::READ_PERMISSION);
         try {
@@ -110,7 +110,7 @@ class TicketsController extends Controller
         $ticketcomments = $ticket->ticketcomments;
         $ticketcategory = $ticket->ticketcategory;
         $server = Server::where('id', $ticket->server)->first();
-        $phoenixpanel_url = $ptero_settings->panel_url;
+        $phoenixpanel_url = $phoenix_settings->panel_url;
 
         return view('ticket.show', compact('ticket', 'ticketcategory', 'ticketcomments', 'server', 'phoenixpanel_url'));
     }
