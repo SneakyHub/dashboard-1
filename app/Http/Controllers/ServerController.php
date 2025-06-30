@@ -211,10 +211,25 @@ class ServerController extends Controller
         $servers = Auth::user()->servers;
 
         foreach ($servers as $server) {
-            $serverInfo = $this->phoenixpanel->getServerAttributes($server->phoenixpanel_id);
-            if (!$serverInfo) continue;
+            try {
+                $serverInfo = $this->phoenixpanel->getServerAttributes($server->phoenixpanel_id);
+                if (!$serverInfo) {
+                    Log::warning('No server info returned for server', [
+                        'server_id' => $server->id,
+                        'phoenixpanel_id' => $server->phoenixpanel_id
+                    ]);
+                    continue;
+                }
 
-            $this->updateServerInfo($server, $serverInfo);
+                $this->updateServerInfo($server, $serverInfo);
+            } catch (Exception $e) {
+                Log::error('Failed to get server info', [
+                    'server_id' => $server->id,
+                    'phoenixpanel_id' => $server->phoenixpanel_id,
+                    'error' => $e->getMessage()
+                ]);
+                continue;
+            }
         }
 
         return $servers;
@@ -289,7 +304,37 @@ class ServerController extends Controller
             return null;
         }
 
-        $serverAttributes = $response->json()['attributes'];
+        // Handle potential BOM (Byte Order Mark) in response body
+        $responseBody = $response->body();
+        $cleanResponseBody = ltrim($responseBody, "\xEF\xBB\xBF"); // Remove UTF-8 BOM
+        
+        try {
+            $responseData = json_decode($cleanResponseBody, true);
+        } catch (Exception $e) {
+            $responseData = $response->json(); // Fallback to Laravel's method
+        }
+        
+        Log::info('PhoenixPanel createServer response', [
+            'server_id' => $server->id,
+            'response_data' => $responseData,
+            'response_status' => $response->status(),
+            'has_bom' => $responseBody !== $cleanResponseBody
+        ]);
+
+        // Validate response structure before accessing attributes
+        if (!$responseData || !isset($responseData['attributes'])) {
+            Log::error('Invalid response structure from PhoenixPanel createServer', [
+                'server_id' => $server->id,
+                'response_data' => $responseData,
+                'response_status' => $response->status(),
+                'response_body' => $response->body(),
+                'clean_response_body' => $cleanResponseBody
+            ]);
+            $server->delete();
+            return null;
+        }
+
+        $serverAttributes = $responseData['attributes'];
         $server->update([
             'phoenixpanel_id' => $serverAttributes['id'],
             'identifier' => $serverAttributes['identifier']

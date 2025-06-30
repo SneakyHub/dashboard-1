@@ -92,7 +92,7 @@ class PhoenixPanelClient
             return new HttpException($status,'PhoenixPanel node error (HTTP ' . $status . ') - ' . $message);
         }
 
-        return new Exception('Request Failed, is phoenixpanel set-up correctly? - ' . $message);
+        return new HttpException(500, 'Request Failed, is phoenixpanel set-up correctly? - ' . $message);
     }
 
     /**
@@ -151,7 +151,30 @@ class PhoenixPanelClient
             throw self::getException('Failed to get node id ' . $id . ' - ' . $response->status());
         }
 
-        return $response->json()['attributes'];
+        // Handle potential BOM (Byte Order Mark) in response body
+        $responseBody = $response->body();
+        $cleanResponseBody = ltrim($responseBody, "\xEF\xBB\xBF"); // Remove UTF-8 BOM
+        
+        try {
+            $responseData = json_decode($cleanResponseBody, true);
+        } catch (Exception $e) {
+            $responseData = $response->json(); // Fallback to Laravel's method
+        }
+        
+        // Validate response structure before accessing attributes
+        if (!$responseData || !isset($responseData['attributes'])) {
+            Log::error('Invalid response structure from PhoenixPanel getNode', [
+                'node_id' => $id,
+                'response_data' => $responseData,
+                'response_status' => $response->status(),
+                'response_body' => $response->body(),
+                'clean_response_body' => $cleanResponseBody,
+                'has_bom' => $responseBody !== $cleanResponseBody
+            ]);
+            throw self::getException('Invalid response structure from PhoenixPanel getNode for node ' . $id);
+        }
+
+        return $responseData['attributes'];
     }
 
     public function getServers()
@@ -351,7 +374,30 @@ class PhoenixPanelClient
             throw self::getException('Failed to get user from phoenixpanel - ', $response->status());
         }
 
-        return $response->json()['attributes'];
+        // Handle potential BOM (Byte Order Mark) in response body
+        $responseBody = $response->body();
+        $cleanResponseBody = ltrim($responseBody, "\xEF\xBB\xBF"); // Remove UTF-8 BOM
+        
+        try {
+            $responseData = json_decode($cleanResponseBody, true);
+        } catch (Exception $e) {
+            $responseData = $response->json(); // Fallback to Laravel's method
+        }
+        
+        // Validate response structure before accessing attributes
+        if (!$responseData || !isset($responseData['attributes'])) {
+            Log::error('Invalid response structure from PhoenixPanel getUser', [
+                'phoenixpanel_id' => $phoenixpanelId,
+                'response_data' => $responseData,
+                'response_status' => $response->status(),
+                'response_body' => $response->body(),
+                'clean_response_body' => $cleanResponseBody,
+                'has_bom' => $responseBody !== $cleanResponseBody
+            ]);
+            throw self::getException('Invalid response structure from PhoenixPanel getUser for user ' . $phoenixpanelId);
+        }
+
+        return $responseData['attributes'];
     }
 
     /**
@@ -368,19 +414,40 @@ class PhoenixPanelClient
             throw self::getException($e->getMessage());
         }
 
-        //print response body
-
         if ($response->failed()) {
             if ($deleteOn404) {  //Delete the server if it does not exist (server deleted on phoenixpanel)
                 Server::where('phoenixpanel_id', $phoenixpanelId)->first()->delete();
 
-                return;
+                return null;
             } else {
                 throw self::getException('Failed to get server attributes from phoenixpanel - ', $response->status());
             }
         }
 
-        return $response->json()['attributes'];
+        // Handle potential BOM (Byte Order Mark) in response body
+        $responseBody = $response->body();
+        $cleanResponseBody = ltrim($responseBody, "\xEF\xBB\xBF"); // Remove UTF-8 BOM
+        
+        try {
+            $responseData = json_decode($cleanResponseBody, true);
+        } catch (Exception $e) {
+            $responseData = $response->json(); // Fallback to Laravel's method
+        }
+        
+        // Validate response structure before accessing attributes
+        if (!$responseData || !isset($responseData['attributes'])) {
+            Log::error('Invalid response structure from PhoenixPanel getServerAttributes', [
+                'phoenixpanel_id' => $phoenixpanelId,
+                'response_data' => $responseData,
+                'response_status' => $response->status(),
+                'response_body' => $response->body(),
+                'clean_response_body' => $cleanResponseBody,
+                'has_bom' => $responseBody !== $cleanResponseBody
+            ]);
+            return null;
+        }
+
+        return $responseData['attributes'];
     }
 
     /**
@@ -461,9 +528,37 @@ class PhoenixPanelClient
         } catch (Exception $e) {
             throw self::getException($e->getMessage());
         }
-        $node = $response['attributes'];
-        $freeMemory = ($node['memory'] * ($node['memory_overallocate'] + 100) / 100) - $node['allocated_resources']['memory'];
-        $freeDisk = ($node['disk'] * ($node['disk_overallocate'] + 100) / 100) - $node['allocated_resources']['disk'];
+        
+        if ($response->failed()) {
+            throw self::getException('Failed to get node resources for node ' . $node->id, $response->status());
+        }
+        
+        // Handle potential BOM (Byte Order Mark) in response body
+        $responseBody = $response->body();
+        $cleanResponseBody = ltrim($responseBody, "\xEF\xBB\xBF"); // Remove UTF-8 BOM
+        
+        try {
+            $responseData = json_decode($cleanResponseBody, true);
+        } catch (Exception $e) {
+            $responseData = $response->json(); // Fallback to Laravel's method
+        }
+        
+        // Validate response structure before accessing attributes
+        if (!$responseData || !isset($responseData['attributes'])) {
+            Log::error('Invalid response structure from PhoenixPanel checkNodeResources', [
+                'node_id' => $node->id,
+                'response_data' => $responseData,
+                'response_status' => $response->status(),
+                'response_body' => $response->body(),
+                'clean_response_body' => $cleanResponseBody,
+                'has_bom' => $responseBody !== $cleanResponseBody
+            ]);
+            throw self::getException('Invalid response structure from PhoenixPanel checkNodeResources for node ' . $node->id);
+        }
+        
+        $nodeData = $responseData['attributes'];
+        $freeMemory = ($nodeData['memory'] * ($nodeData['memory_overallocate'] + 100) / 100) - $nodeData['allocated_resources']['memory'];
+        $freeDisk = ($nodeData['disk'] * ($nodeData['disk_overallocate'] + 100) / 100) - $nodeData['allocated_resources']['disk'];
         if ($freeMemory < $requireMemory) {
             return false;
         }
