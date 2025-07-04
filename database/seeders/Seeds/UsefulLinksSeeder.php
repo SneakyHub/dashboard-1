@@ -16,7 +16,7 @@ class UsefulLinksSeeder extends Seeder
     {
         UsefulLink::create([
             'icon' => 'fas fa-egg',
-            'title' => 'PhoenixPanel Panel',
+            'title' => 'PhoenixPanel',
             'link' => env('PHOENIXPANEL_URL', 'http://localhost'),
             'description' => 'Use your servers on our phoenixpanel panel <small>(You can use the same login details)</small>',
             'position' => 'dashboard',
