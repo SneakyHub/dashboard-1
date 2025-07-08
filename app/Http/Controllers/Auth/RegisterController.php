@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\ReferralNotification;
 use App\Providers\RouteServiceProvider;
+use App\Services\ProtectCordService;
 use App\Traits\Referral;
 use Carbon\Carbon;
 use App\Settings\PhoenixPanelSettings;
@@ -42,6 +43,7 @@ class RegisterController extends Controller
 
     private $referral_reward;
     private $recaptcha_version;
+    private $protectCordService;
 
     /*
     |--------------------------------------------------------------------------
@@ -68,7 +70,7 @@ class RegisterController extends Controller
      *
      * @return void
      */
-    public function __construct(PhoenixPanelSettings $phoenix_settings, GeneralSettings $general_settings, WebsiteSettings $website_settings, UserSettings $user_settings, ReferralSettings $referral_settings)
+    public function __construct(PhoenixPanelSettings $phoenix_settings, GeneralSettings $general_settings, WebsiteSettings $website_settings, UserSettings $user_settings, ReferralSettings $referral_settings, ProtectCordService $protectCordService)
     {
         $this->middleware('guest');
         $this->phoenixpanel = new PhoenixPanelClient($phoenix_settings);
@@ -80,6 +82,7 @@ class RegisterController extends Controller
         $this->initial_server_limit = $user_settings->initial_server_limit;
         $this->referral_mode = $referral_settings->mode;
         $this->referral_reward = $referral_settings->reward;
+        $this->protectCordService = $protectCordService;
     }
 
     /**
@@ -111,8 +114,25 @@ class RegisterController extends Controller
 
         if ($this->register_ip_check) {
 
-            //check if ip has already made an account
+            // Perform ProtectCord IP check
             $data['ip'] = session()->get('ip') ?? request()->ip();
+
+            // Perform IP check with ProtectCord
+            try {
+                $protectCordResult = $this->protectCordService->checkIp($data['ip']);
+            } catch (\Exception $e) {
+                throw ValidationException::withMessages([
+                    'protectcord_validation' => ['Failed to verify your IP address. Please try again later.']
+                ]);
+            }
+
+            if ($protectCordResult['block'] === true) {
+                throw ValidationException::withMessages([
+                    'protectcord_validation' => ['Your IP address has been flagged for security reasons: ' . $protectCordResult['reasonText']],
+                ]);
+            }
+
+            // Check if IP has already made an account
             if (User::where('ip', '=', request()->ip())->exists()) {
                 session()->put('ip', request()->ip());
             }
@@ -126,6 +146,7 @@ class RegisterController extends Controller
 
         return Validator::make($data, $validationRules);
     }
+
 
     /**
      * Create a new user instance after a valid registration.
