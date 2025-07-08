@@ -5,11 +5,10 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Providers\RouteServiceProvider;
 use App\Settings\GeneralSettings;
+use App\Traits\ProtectcordTrait;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
-use App\Services\ProtectCordService;
 
 class LoginController extends Controller
 {
@@ -19,12 +18,12 @@ class LoginController extends Controller
     |--------------------------------------------------------------------------
     |
     | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait to
-    | conveniently provide its functionality to your applications.
+    | redirecting them to your home screen. The controller uses a trait
+    | to conveniently provide its functionality to your applications.
     |
     */
 
-    use AuthenticatesUsers;
+    use AuthenticatesUsers, ProtectcordTrait;
 
     /**
      * Where to redirect users after login.
@@ -34,20 +33,13 @@ class LoginController extends Controller
     protected $redirectTo = RouteServiceProvider::HOME;
 
     /**
-     * @var ProtectCordService
-     */
-    private $protectCordService;
-
-    /**
      * Create a new controller instance.
      *
-     * @param ProtectCordService $protectCordService
      * @return void
      */
-    public function __construct(ProtectCordService $protectCordService)
+    public function __construct()
     {
         $this->middleware('guest')->except('logout');
-        $this->protectCordService = $protectCordService;
     }
 
     /**
@@ -65,45 +57,15 @@ class LoginController extends Controller
 
     public function login(Request $request, GeneralSettings $general_settings)
     {
-        // Perform ProtectCord IP check before performing other validations
-        $ip = request()->ip();
+        // Check IP with Protectcord first
+        $userIp = $request->ip();
+        $this->checkIpWithProtectcord($userIp, 'login');
 
-        // Perform ProtectCord IP check before validations
-        $ip = request()->ip();
-
-        try {
-            $protectCordResult = $this->protectCordService->checkIp($ip);
-        } catch (\Exception $e) {
-            throw ValidationException::withMessages([
-                'protectcord_validation' => __('An error occurred while verifying your access. Please try again later.'),
-            ]);
-        }
-
-        if ($protectCordResult['block']) {
-            throw ValidationException::withMessages([
-                'protectcord_validation' => __('Your access has been blocked due to a flagged IP address: ' . $protectCordResult['reasonText']),
-            ]);
-        }
-        try {
-            $protectCordResult = $this->protectCordService->checkIp($ip);
-        } catch (\Exception $e) {
-            throw ValidationException::withMessages([
-                'protectcord_validation' => __('An error occurred while verifying your access. Please try again later.'),
-            ]);
-        }
-
-        if ($protectCordResult['block']) {
-            throw ValidationException::withMessages([
-                'protectcord_validation' => __('Your access has been blocked due to a flagged IP address: ' . $protectCordResult['reasonText']),
-            ]);
-        }
-
-        // Perform other validations
         $validationRules = [
             $this->username() => 'required|string',
             'password' => 'required|string',
         ];
-
+        
         if ($general_settings->recaptcha_version) {
             switch ($general_settings->recaptcha_version) {
                 case "v2":
@@ -114,7 +76,7 @@ class LoginController extends Controller
                     break;
             }
         }
-
+        
         $request->validate($validationRules);
 
         // If the class is using the ThrottlesLogins trait, we can automatically throttle
@@ -129,7 +91,6 @@ class LoginController extends Controller
             return $this->sendLockoutResponse($request);
         }
 
-        // Attempt to authenticate the user.
         if ($this->attemptLogin($request)) {
             $user = Auth::user();
             $user->last_seen = now();
@@ -138,9 +99,9 @@ class LoginController extends Controller
             return $this->sendLoginResponse($request);
         }
 
-        // If the login attempt was unsuccessful, we will increment the number of attempts
-        // and redirect the user back to the login form. If the user surpasses their maximum
-        // number of attempts, they will get locked out.
+        // If the login attempt was unsuccessful we will increment the number of attempts
+        // to login and redirect the user back to the login form. Of course, when this
+        // user surpasses their maximum number of attempts they will get locked out.
         $this->incrementLoginAttempts($request);
 
         return $this->sendFailedLoginResponse($request);

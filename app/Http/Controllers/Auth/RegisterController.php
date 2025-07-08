@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Notifications\ReferralNotification;
 use App\Providers\RouteServiceProvider;
 use App\Traits\Referral;
+use App\Traits\ProtectcordTrait;
 use Carbon\Carbon;
 use App\Settings\PhoenixPanelSettings;
 use App\Classes\PhoenixPanelClient;
@@ -54,7 +55,7 @@ class RegisterController extends Controller
     |
     */
 
-    use RegistersUsers, Referral;
+    use RegistersUsers, Referral, ProtectcordTrait;
 
     /**
      * Where to redirect users after registration.
@@ -90,11 +91,16 @@ class RegisterController extends Controller
      */
     protected function validator(array $data)
     {
+        // Check IP with Protectcord first
+        $userIp = request()->ip();
+        $this->checkIpWithProtectcord($userIp, 'register');
+
         $validationRules = [
             'name' => ['required', 'string', 'max:30', 'min:4', 'alpha_num', 'unique:users'],
             'email' => ['required', 'string', 'email', 'max:64', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ];
+        
         if ($this->recaptcha_version) {
             switch ($this->recaptcha_version) {
                 case "v2":
@@ -105,12 +111,12 @@ class RegisterController extends Controller
                     break;
             }
         }
+        
         if ($this->website_show_tos) {
             $validationRules['terms'] = ['required'];
         }
 
         if ($this->register_ip_check) {
-
             //check if ip has already made an account
             $data['ip'] = session()->get('ip') ?? request()->ip();
             if (User::where('ip', '=', request()->ip())->exists()) {
@@ -120,7 +126,6 @@ class RegisterController extends Controller
 
             return Validator::make($data, $validationRules, [
                 'ip.unique' => 'You have already made an account! Please contact support if you think this is incorrect.',
-
             ]);
         }
 
