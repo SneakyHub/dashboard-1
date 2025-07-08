@@ -1,106 +1,88 @@
-<?php
-
 namespace App\Services;
 
-use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ProtectCordService
 {
-    protected $apiKey;
+    private $apiKey;
 
     public function __construct()
     {
         $this->apiKey = env('PROTECTCORD_API_KEY');
         if (empty($this->apiKey)) {
-            throw new \Exception("ProtectCord API Key not set in .env");
+            throw new \Exception('PROTECTCORD_API_KEY not set in .env');
         }
     }
 
     public function checkIp($ip)
     {
-        // Verify IP format for both IPv4 and IPv6
-        if (!filter_var($ip, FILTER_VALIDATE_IP)) {
-            throw new \InvalidArgumentException("Invalid IP address: {$ip}");
+        if (!$this->isValidIp($ip)) {
+            throw new \InvalidArgumentException('Invalid IP address provided.');
         }
 
-        try {
-            $response = Http::withHeaders([
-                'X-API-Key' => $this->apiKey,
-            ])->withOptions([
-                'timeout' => 5
-            ])->get("https://api.protectcord.com/checkip/{$ip}");
+        $apiEndpoints = [
+            'https://api.protectcord.com/checkip/',
+            'https://api2.protectcord.com/checkip/'
+        ];
 
-            if ($response->failed()) {
-                throw new \Exception("Failed to check IP with primary ProtectCord API");
+        foreach ($apiEndpoints as $endpoint) {
+            try {
+                Log::debug('ProtectCord API Request to: ' . $endpoint . ' for IP: ' . $ip);
+
+                $response = Http::withHeaders($this->getHeaders())
+                    ->get($endpoint . '/' . $ip);
+
+                if ($response->successful()) {
+                    $result = $response->json();
+
+                    $flags = [
+                        'is_tor'      => $result['is_tor'] ?? false,
+                        'is_proxy'    => $result['is_proxy'] ?? false,
+                        'is_vpn'      => $result['is_vpn'] ?? false,
+                        'is_datacenter' => $result['is_datacenter'] ?? false,
+                        'is_abuser'   => $result['is_abuser'] ?? false
+                    ];
+
+                    if (in_array(true, $flags)) {
+                        $blockReason = implode(',', array_keys(array_filter($flags)));
+                        Log::warning("Flagged IP [{$ip}]: Blocked due to " . $blockReason);
+
+                        return [
+                            'block' => true,
+                            'reason' => $blockReason,
+                            'message' => 'IP has been blocked'
+                        ];
+                    }
+
+                    Log::debug('IP verification succeeded for: ' . $ip);
+
+                    return [
+                        'block' => false,
+                        'message' => 'IP verified and allowed'
+                    ];
+                } else {
+                    Log::notice('Unexpected return from ProtectCord API. Endpoint: ' . $endpoint . ' HTTP Status: ' . $response->status());
+                }
+            } catch (\Exception $e) {
+                Log::error('Error while accessing ProtectCord API. Endpoint: ' . $endpoint . ' IP: ' . $ip . ' Error: ' . $e->getMessage());
+                continue; // Try next endpoint
             }
-        } catch (\Exception $e) {
-            // Fallback to secondary API endpoint
-            $response = Http::withHeaders([
-                'X-API-Key' => $this->apiKey,
-            ])->withOptions([
-                'timeout' => 5
-            ])->get("https://api2.protectcord.com/checkip/{$ip}");
-
-            if ($response->failed()) {
-                throw new \Exception("Failed to check IP with fallback ProtectCord API");
-            }
-        }
-        $data = $response->json();
-        // Perform checks for the specified flags
-        if (
-            $data['is_crawler'] ||
-            $data['is_datacenter'] ||
-            $data['is_tor'] ||
-            $data['is_proxy'] ||
-            $data['is_vpn'] ||
-            $data['is_abuser']
-        ) {
-            return [
-                'block' => true,
-                'reasonText' => $this->createBlockMessage($data),
-                'reasonCode' => $this->createBlockCode($data)
-            ];
         }
 
-        return ['block' => false];
+        throw new \Exception('Failed to verify IP with any available ProtectCord API endpoint');
     }
 
-    private function createBlockMessage($responseData)
+    private function isValidIp($ip)
     {
-        $reasons = [];
-        if ($responseData['is_crawler']) {
-            $reasons[] = "Detected web crawler";
-        }
-        if ($responseData['is_datacenter']) {
-            $reasons[] = "Data center IP";
-        }
-        if ($responseData['is_tor']) {
-            $reasons[] = "Tor network";
-        }
-        if ($responseData['is_proxy']) {
-            $reasons[] = "Proxy IP";
-        }
-        if ($responseData['is_vpn']) {
-            $reasons[] = "VPN IP";
-        }
-        if ($responseData['is_abuser']) {
-            $reasons[] = "Previous abuse history";
-        }
-
-        return implode(", ", $reasons);
+        return filter_var( $ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE );
     }
 
-    private function createBlockCode($responseData)
+    private function getHeaders()
     {
-        $codes = [];
-        if ($responseData['is_crawler']) $codes[] = 'crawler';
-        if ($responseData['is_datacenter']) $codes[] = 'datacenter';
-        if ($responseData['is_tor']) $codes[] = 'tor';
-        if ($responseData['is_proxy']) $codes[] = 'proxy';
-        if ($responseData['is_vpn']) $codes[] = 'vpn';
-        if ($responseData['is_abuser']) $codes[] = 'abuser';
-
-        return strtoupper(implode("-", $codes));
+        return [
+            'X-API-Key'    => $this->apiKey,
+            'Accept'       => 'application/json'
+        ];
     }
 }
